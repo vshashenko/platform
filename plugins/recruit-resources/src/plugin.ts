@@ -74,7 +74,10 @@ export default mergeIds(recruitId, recruit, {
     Remote: '' as IntlString,
     SkillLabel: '' as IntlString,
     SkillsLabel: '' as IntlString,
-    SkillCreateLabel: '' as IntlString,
+    SkillCreateLsabel: '' as IntlString,
+    SurveyLabel: '' as IntlString,
+    SurveysLabel: '' as IntlString,
+    SurveyCreateLabel: '' as IntlString,
     General: '' as IntlString,
     Members: '' as IntlString,
     Yes: '' as IntlString,
@@ -109,6 +112,7 @@ export default mergeIds(recruitId, recruit, {
     TalentReviews: '' as IntlString,
     AddDescription: '' as IntlString,
     NumberSkills: '' as IntlString,
+    NumberSurveys: '' as IntlString,
     AddDropHere: '' as IntlString,
     Uploading: '' as IntlString,
     Parsing: '' as IntlString,
@@ -133,7 +137,8 @@ export default mergeIds(recruitId, recruit, {
     OpenVacancyList: '' as IntlString,
     Export: '' as IntlString,
     GetTalentIds: '' as IntlString,
-    CreateNewSkills: '' as IntlString
+    CreateNewSkills: '' as IntlString,
+    CreateNewSurveys: '' as IntlString
   },
   category: {
     Other: '' as Ref<TagCategory>,

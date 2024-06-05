@@ -21,7 +21,7 @@
 
   export let value: TagReference
   export let isEditable: boolean = false
-  export let kind: 'list' | 'link' | 'skills' | 'todo' = 'skills'
+  export let kind: 'list' | 'link' | 'skills' | 'todo' | 'surveys' = 'skills'
   export let realWidth: number | undefined = undefined
   export let attr: AnyAttribute | undefined
   export let inline: boolean = false
@@ -35,6 +35,8 @@
   {#if inline}
     <TagItem tag={value} schema={attr?.schema ?? '0'} inline />
   {:else if kind === 'skills'}
+    <TagItem tag={value} schema={attr?.schema ?? '0'} />
+  {:else if kind === 'surveys'}
     <TagItem tag={value} schema={attr?.schema ?? '0'} />
   {:else if kind === 'link'}
     <button

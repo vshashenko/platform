@@ -34,4 +34,5 @@ export interface ReconiDocument {
   telegram?: string
   twitter?: string
   skills: string[]
+  surveys: string[]
 }

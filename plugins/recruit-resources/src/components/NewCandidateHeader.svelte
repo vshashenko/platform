@@ -28,7 +28,7 @@
     })
   )
 
-  async function newCandidate (): Promise<void> {
+  async function newCandidate(): Promise<void> {
     showPopup(CreateCandidate, { shouldSaveDraft: true }, 'top')
   }
 </script>

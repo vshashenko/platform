@@ -30,6 +30,7 @@ loadMetadata(recruit.icon, {
   AssignedToMe: `${icons}#assignedToMe`,
   Reviews: `${icons}#reviews`,
   Skills: `${icons}#skills`,
+  Survey: `${icons}#survey`,
   Issue: `${icons}#issue`,
   Schedule: `${icons}#schedule`,
   Talents: `${icons}#talents`

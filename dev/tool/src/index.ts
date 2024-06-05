@@ -78,6 +78,7 @@ import {
   fixCommentDoubleIdCreate,
   fixMinioBW,
   fixSkills,
+  fixSurveys,
   optimizeModel,
   restoreHrTaskTypesFromUpdates,
   restoreRecruitingTaskTypes
@@ -1022,6 +1023,14 @@ export function devTool (
     .action(async (workspace: string, step: string) => {
       const { mongodbUri } = prepareTools()
       await fixSkills(mongodbUri, getWorkspaceId(workspace, productId), transactorUrl, step)
+    })
+
+  program
+    .command('fix-forms <workspace> <step>')
+    .description('fix forms for workspace')
+    .action(async (workspace: string, step: string) => {
+      const { mongodbUri } = prepareTools()
+      await fixSurveys(mongodbUri, getWorkspaceId(workspace, productId), transactorUrl, step)
     })
 
   program

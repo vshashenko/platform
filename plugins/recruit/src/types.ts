@@ -43,6 +43,7 @@ export interface Candidate extends Person {
   remote?: boolean
   source?: string
   skills?: number
+  surveys?: string
   reviews?: number
 }
 
@@ -63,6 +64,7 @@ export interface CandidateDraft {
   onsite?: boolean
   remote?: boolean
   skills: TagReference[]
+  Forms: string[]
 }
 
 /** @public */

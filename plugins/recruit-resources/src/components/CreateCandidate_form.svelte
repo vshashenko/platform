@@ -89,6 +89,7 @@
       title: '',
       channels: [],
       skills: [],
+      survey: [],
       city: ''
     }
   }
@@ -146,6 +147,7 @@
   let loading = false
   let dragover = false
   let shouldCreateNewSkills = false
+  let shouldCreateNewSurveys = false
 
   let avatar: File | undefined = draft?.avatar
 
@@ -155,6 +157,11 @@
   const key: KeyedAttribute = {
     key: 'skills',
     attr: client.getHierarchy().getAttribute(recruit.mixin.Candidate, 'skills')
+  }
+
+  const surveyKey: KeyedAttribute = {
+    key: 'surveys',
+    attr: client.getHierarchy().getAttribute(recruit.mixin.Candidate, 'surveys')
   }
 
   let elements = new Map<Ref<TagElement>, TagElement>()
@@ -201,7 +208,7 @@
       onsite: object.onsite,
       remote: object.remote,
       skills: 0,
-      surveys: 0,
+      survey: 0
     }
 
     // Store all extra values.
@@ -268,6 +275,9 @@
     const skillTagElements = toIdMap(
       await client.findAll(tags.class.TagElement, { _id: { $in: object.skills.map((it) => it.tag) } })
     )
+    const surveyTagElements = toIdMap(
+      await client.findAll(tags.class.TagElement, { _id: { $in: object?.surveys.map((it) => it.tag) } })
+    )
     for (const skill of object.skills) {
       // Create update tag if missing
       if (!skillTagElements.has(skill.tag)) {
@@ -284,6 +294,30 @@
         color: skill.color,
         tag: skill.tag,
         weight: skill.weight
+      })
+    }
+
+    await applyOps.commit()
+    draftController.remove()
+    dispatch('close', _id)
+    resetObject()
+
+    for (const survey of object?.surveys) {
+      // Create update tag if missing
+      if (!surveyTagElements.has(survey.tag)) {
+        survey.tag = await client.createDoc(tags.class.TagElement, survey.space, {
+          title: survey.title,
+          color: survey.color,
+          targetClass: recruit.mixin.Candidate,
+          description: '',
+          category: findTagCategory(survey.title, categories)
+        })
+      }
+      await applyOps.addCollection(survey._class, survey.space, _id, recruit.mixin.Candidate, 'surveys', {
+        title: survey.title,
+        color: survey.color,
+        tag: survey.tag,
+        weight: survey.weight
       })
     }
 
@@ -363,10 +397,13 @@
       const categoriesMap = toIdMap(categories)
 
       const newSkills: TagReference[] = []
+      const newSurveys: TagReference[] = []
       const formattedSkills = (doc.skills.map((s) => s.toLowerCase()) ?? []).filter(
         (skill) => !namedElements.has(skill)
       )
+      const formattedSurveys = (doc.surveys.map((s) => s.toLowerCase()) ?? []).filter((survey) => !namedElements.has(survey))
       const refactoredSkills = []
+      const refactoredSurveys = []
       if (formattedSkills.length > 0) {
         const existingTags = Array.from(namedElements.keys()).filter((x) => x.length > 2)
         const regex = /\S+(?:[-+]\S+)+/g
@@ -410,7 +447,51 @@
         }
       }
 
+      if (formattedSurveys.length > 0) {
+        const existingTags = Array.from(namedElements.keys()).filter((x) => x.length > 2)
+        const regex = /\S+(?:[-+]\S+)+/g
+        const regexForEmpty = /^((?![a-zA-Zа-яА-Я]).)*$/g
+        for (let sk of formattedSurveys) {
+          sk = sk.toLowerCase()
+          const toReplace = [...new Set([...existingTags, ...refactoredSurveys])]
+            .filter((s) => sk.includes(s))
+            .sort((a, b) => b.length - a.length)
+          if (toReplace.length > 0) {
+            for (const replacing of toReplace) {
+              if (namedElements.has(replacing)) {
+                refactoredSurveys.push(replacing)
+                sk = sk.replace(replacing, '').trim()
+              }
+            }
+          }
+          if (sk.includes(' ')) {
+            const skSplit = sk.split(' ')
+            for (const spl of skSplit) {
+              const fixedTitle = regex.test(spl) ? spl.replaceAll(/[+-]/g, '') : spl
+              if (namedElements.has(fixedTitle)) {
+                refactoredSurveys.push(fixedTitle)
+                sk = sk.replace(spl, '').trim()
+              }
+              if ([...doc.surveys, ...refactoredSurveys].includes(fixedTitle)) {
+                sk = sk.replace(spl, '').trim()
+              }
+            }
+          }
+          if (regex.test(sk)) {
+            const fixedTitle = sk.replaceAll(/[+-]/g, '')
+            if (namedElements.has(fixedTitle)) {
+              refactoredSurveys.push(fixedTitle)
+              sk = ''
+            }
+          }
+          if (!regexForEmpty.test(sk) && !refactoredSurveys.includes(sk)) {
+            refactoredSurveys.push(sk)
+          }
+        }
+      }
+
       const skillsToAdd = [...new Set([...doc.skills.map((s) => s.toLowerCase()), ...refactoredSkills])]
+      const surveysToAdd = [...new Set([...doc.surveys.map((s) => s.toLowerCase()), ...refactoredSurveys])]
 
       // Create missing tag elemnts
       for (const s of skillsToAdd) {
@@ -448,8 +529,43 @@
           )
         }
       }
-      
+      for (const s of surveysToAdd) {
+        const title = s.trim().toLowerCase()
+        let e = namedElements.get(title)
+        if (e === undefined && shouldCreateNewSurveys) {
+          // No yet tag with title
+          const category = findTagCategory(s, categories)
+          const cinstance = categoriesMap.get(category)
+          e = TxProcessor.createDoc2Doc(
+            client.txFactory.createTxCreateDoc(tags.class.TagElement, tags.space.Tags, {
+              title,
+              description: `Imported survey ${s} of ${cinstance?.label ?? ''}`,
+              color: getColorNumberByText(s),
+              targetClass: recruit.mixin.Candidate,
+              category
+            })
+          )
+          namedElements.set(title, e)
+          elements.set(e._id, e)
+          newElements.push(e)
+        }
+        if (e !== undefined) {
+          newSurveys.push(
+            TxProcessor.createDoc2Doc(
+              client.txFactory.createTxCreateDoc(tags.class.TagReference, tags.space.Tags, {
+                title: e.title,
+                color: e.color,
+                tag: e._id,
+                attachedTo: '' as Ref<Doc>,
+                attachedToClass: recruit.mixin.Candidate,
+                collection: 'surveys'
+              })
+            )
+          )
+        }
+      }
       object.skills = [...object.skills, ...newSkills]
+      object.surveys = [...object?.surveys, ...newSurveys]
 
     } catch (err: any) {
       Analytics.handleError(err)
@@ -550,9 +666,9 @@
 
   async function showConfirmationDialog () {
     draftController.save(object, empty)
-    const isFormEmpty = draft === undefined
+    const isSurveyEmpty = draft === undefined
 
-    if (isFormEmpty) {
+    if (isSurveyEmpty) {
       dispatch('close')
     } else {
       showPopup(
@@ -676,6 +792,7 @@
         focusIndex: 102,
         items: object.skills,
         key,
+        surveyKey,
         targetClass: recruit.mixin.Candidate,
         showTitle: false,
         elements,
@@ -700,6 +817,7 @@
             focusIndex: 102,
             items: object.skills,
             key,
+            surveyKey,
             targetClass: recruit.mixin.Candidate,
             showTitle: false,
             elements,
@@ -715,6 +833,60 @@
           on:change={(evt) => {
             evt.detail.tag.weight = evt.detail.weight
             object.skills = object.skills
+          }}
+        />
+      </div>
+    {:else}
+      <div class="flex-grow w-full" style="margin: 0" />
+    {/if}
+    <Component
+      is={tags.component.TagsDropdownEditor}
+      props={{
+        disabled: loading,
+        focusIndex: 102,
+        items: object?.surveys,
+        key,
+        surveyKey,
+        targetClass: recruit.mixin.Candidate,
+        showTitle: false,
+        elements,
+        newElements,
+        countLabel: recruit.string.NumberSurveys,
+        kind: 'regular',
+        size: 'large'
+      }}
+      on:open={(evt) => {
+        addTagRef(evt.detail)
+      }}
+      on:delete={(evt) => {
+        object.surveys = object?.surveys.filter((it) => it._id !== evt.detail)
+      }}
+    />
+    {#if object?.surveys.length > 0}
+      <div class="antiComponent antiEmphasized w-full flex-grow mt-2">
+        <Component
+          is={tags.component.TagsEditor}
+          props={{
+            disabled: loading,
+            focusIndex: 102,
+            items: object?.surveys,
+            key,
+            surveyKey,
+            targetClass: recruit.mixin.Candidate,
+            showTitle: false,
+            elements,
+            newElements,
+            countLabel: recruit.string.NumberSurveys
+          }}
+          on:open={(evt) => {
+            addTagRef(evt.detail)
+          }}
+          on:delete={(evt) => {
+            object.surveys = object?.surveys.filter((it) => it._id !== evt.detail)
+          }}
+          on:change={(evt) => {
+            evt.detail.tag.weight = evt.detail.weight
+            object.surveys = object?.surveys
           }}
         />
       </div>
@@ -787,6 +959,9 @@
       <div class="ml-1">
         <MiniToggle bind:on={shouldCreateNewSkills} label={recruit.string.CreateNewSkills} />
       </div>
+      <div class="ml-1">
+        <MiniToggle bind:on={shouldCreateNewSurveys} label={recruit.string.CreateNewSurveys} />
+      </div>
     </div>
     {#if matches.length > 0}
       <div class="flex-col-stretch flex-grow error-color">
@@ -812,7 +987,7 @@
       box-shadow: 0 0 0 2px var(--primary-button-outline);
     }
   }
-  .skills-box {
+  .skills-box .survey-box{
     padding: 0.5rem 0.75rem;
     background: var(--theme-comp-header-color);
     border: 1px dashed var(--theme-divider-color);

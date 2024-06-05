@@ -74,6 +74,7 @@ export default mergeIds(recruitId, recruit, {
     GotoTalents: '' as IntlString,
     GotoVacancies: '' as IntlString,
     GotoSkills: '' as IntlString,
+    GotoSurveys: '' as IntlString,
     GotoMyApplications: '' as IntlString,
     GotoApplicants: '' as IntlString,
     GotoRecruitApplication: '' as IntlString,
@@ -82,7 +83,8 @@ export default mergeIds(recruitId, recruit, {
     ShowApplications: '' as IntlString,
     HideDoneState: '' as IntlString,
     HideArchivedVacancies: '' as IntlString,
-    HideApplicantsFromArchivedVacancies: '' as IntlString
+    HideApplicantsFromArchivedVacancies: '' as IntlString,
+    Surveys: '' as IntlString
   },
   validator: {
     ApplicantValidator: '' as Resource<<T extends Doc>(doc: T, client: Client) => Promise<OperationStatus>>
@@ -110,9 +112,10 @@ export default mergeIds(recruitId, recruit, {
     TemplatesIcon: '' as AnyComponent,
     Applications: '' as AnyComponent,
     SkillsView: '' as AnyComponent,
+    SurveysView: '' as AnyComponent,
     Vacancies: '' as AnyComponent,
     Organizations: '' as AnyComponent,
-
+    Surveys: '' as AnyComponent,
     CreateReview: '' as AnyComponent,
     Reviews: '' as AnyComponent,
     KanbanReviewCard: '' as AnyComponent,

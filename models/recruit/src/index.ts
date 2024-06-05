@@ -139,6 +139,7 @@ export function createModel (builder: Builder): void {
   const vacanciesId = 'vacancies'
   const talentsId = 'talents'
   const skillsId = 'skills'
+  const surveysId = 'surveys'
   const candidatesId = 'candidates'
   const myApplicationsId = 'my-applications'
   const organizationsId = 'organizations'
@@ -211,6 +212,15 @@ export function createModel (builder: Builder): void {
           },
           {
             id: skillsId,
+            component: recruit.component.SkillsView,
+            accessLevel: AccountRole.User,
+            icon: recruit.icon.Skills,
+            label: recruit.string.SkillsLabel,
+            createItemLabel: recruit.string.SkillCreateLabel,
+            position: 'bottom'
+          },
+          {
+            id: surveysId,
             component: recruit.component.SkillsView,
             accessLevel: AccountRole.User,
             icon: recruit.icon.Skills,
@@ -297,6 +307,46 @@ export function createModel (builder: Builder): void {
             _class: recruit.mixin.Candidate,
             key: 'skills',
             icon: recruit.icon.Skills
+          }
+        },
+        'modifiedOn',
+        {
+          key: '$lookup.channels',
+          label: contact.string.ContactInfo,
+          sortingKey: ['$lookup.channels.lastMessage', 'channels']
+        }
+      ],
+      configOptions: {
+        hiddenKeys: ['name'],
+        sortable: true
+      }
+    },
+    recruit.viewlet.TableCandidate
+  )
+
+  builder.createDoc(
+    view.class.Viewlet,
+    core.space.Model,
+    {
+      attachTo: recruit.mixin.Candidate,
+      descriptor: view.viewlet.Table,
+      config: [
+        '',
+        'title',
+        'city',
+        'applications',
+        'attachments',
+        'comments',
+        {
+          // key: '$lookup.surveys', // Required, since presenter require list of tag references or '' and TagsPopupPresenter
+          key: '',
+          presenter: tags.component.TagsPresenter,
+          label: recruit.string.SurveysLabel,
+          sortingKey: 'surveys',
+          props: {
+            _class: recruit.mixin.Candidate,
+            key: 'surveys',
+            icon: recruit.icon.Surveys
           }
         },
         'modifiedOn',
@@ -1121,7 +1171,7 @@ export function createModel (builder: Builder): void {
     }
   })
 
-  function createGotoSpecialAction (builder: Builder, id: string, key: KeyBinding, label: IntlString): void {
+  function createGotoSpecialAction(builder: Builder, id: string, key: KeyBinding, label: IntlString): void {
     createNavigateAction(builder, key, label, recruit.app.Recruit as Ref<Application>, {
       application: recruitId,
       mode: 'special',
@@ -1132,6 +1182,7 @@ export function createModel (builder: Builder): void {
   createGotoSpecialAction(builder, talentsId, 'keyG->keyE', recruit.string.GotoTalents)
   createGotoSpecialAction(builder, vacanciesId, 'keyG->keyV', recruit.string.GotoVacancies)
   createGotoSpecialAction(builder, skillsId, 'keyG->keyS', recruit.string.GotoSkills)
+  createGotoSpecialAction(builder, surveysId, 'keyG->keyF', recruit.string.GotoSurveys)
   createGotoSpecialAction(builder, myApplicationsId, 'keyG->keyM', recruit.string.GotoMyApplications)
   createGotoSpecialAction(builder, candidatesId, 'keyG->keyA', recruit.string.GotoApplicants)
 

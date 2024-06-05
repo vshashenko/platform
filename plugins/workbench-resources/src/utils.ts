@@ -165,6 +165,7 @@ export async function buildNavModel (
   currentApplication?: Application
 ): Promise<NavigatorModel | undefined> {
   let newNavModel = currentApplication?.navigatorModel
+  console.log('currentApplication', currentApplication)
   if (currentApplication !== undefined) {
     const models = await client.findAll(workbench.class.ApplicationNavModel, { extends: currentApplication._id })
     for (const nm of models) {

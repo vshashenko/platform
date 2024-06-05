@@ -117,6 +117,12 @@ export class TCandidate extends TPerson implements Candidate {
   })
     skills?: number
 
+  @Prop(Collection(tags.class.TagReference, recruit.string.Surveys), recruit.string.Surveys, {
+    icon: recruit.icon.Surveys,
+    schema: '3'
+  })
+    surveys?: number
+
   @Prop(Collection(recruit.class.Review, recruit.string.Review), recruit.string.Reviews)
     reviews?: number
 
