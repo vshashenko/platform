@@ -37,7 +37,7 @@ import ApplicationPresenter from './components/ApplicationPresenter.svelte'
 import Applications from './components/Applications.svelte'
 import ApplicationsPresenter from './components/ApplicationsPresenter.svelte'
 import CreateApplication from './components/CreateApplication.svelte'
-import CreateCandidate from './components/CreateCandidate.svelte'
+import CreateCandidate from './components/CreateCandidateCopy.svelte'
 import CreateVacancy from './components/CreateVacancy.svelte'
 import EditApplication from './components/EditApplication.svelte'
 import EditVacancy from './components/EditVacancy.svelte'
@@ -47,7 +47,7 @@ import NewCandidateHeader from './components/NewCandidateHeader.svelte'
 import NotificationApplicantPresenter from './components/NotificationApplicantPresenter.svelte'
 import Organizations from './components/Organizations.svelte'
 import SkillsView from './components/SkillsView.svelte'
-import SurveyView from './components/SurveyView.svelte'
+import SurveysView from './components/SurveysView.svelte'
 import TemplatesIcon from './components/TemplatesIcon.svelte'
 import Vacancies from './components/Vacancies.svelte'
 import VacancyCountPresenter from './components/VacancyCountPresenter.svelte'
@@ -363,7 +363,7 @@ export default async (): Promise<Resources> => ({
     CreateCandidate,
     VacancyPresenter,
     SkillsView,
-    SurveyView,
+    SurveysView,
     Vacancies,
     Organizations,
     VacancyItemPresenter,
