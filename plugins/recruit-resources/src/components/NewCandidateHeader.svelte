@@ -17,7 +17,7 @@
   import { Button, IconAdd, showPopup } from '@hcengineering/ui'
   import { onDestroy } from 'svelte'
   import recruit from '../plugin'
-  import CreateCandidate from './CreateCandidateCopy.svelte'
+  import CreateCandidate from './CreateCandidate.svelte'
 
   let draftExists = false
 

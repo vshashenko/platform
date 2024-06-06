@@ -221,10 +221,10 @@ export function createModel (builder: Builder): void {
           },
           {
             id: surveysId,
-            component: recruit.component.SkillsView,
+            component: recruit.component.SurveysView,
             accessLevel: AccountRole.User,
-            icon: recruit.icon.Skills,
-            label: recruit.string.SkillsLabel,
+            icon: recruit.icon.Surveys,
+            label: recruit.string.SurveysLabel,
             createItemLabel: recruit.string.SkillCreateLabel,
             position: 'bottom'
           },

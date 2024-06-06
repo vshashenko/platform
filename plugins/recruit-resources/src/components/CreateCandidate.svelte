@@ -132,7 +132,8 @@
 
   fillDefaults(hierarchy, empty, recruit.mixin.Candidate)
   fillDefaults(hierarchy, object, recruit.mixin.Candidate)
-
+  console.log(hierarchy.getAttribute);
+  
   function resumeDraft () {
     return {
       uuid: object?.resumeUuid,
@@ -163,7 +164,7 @@
 
   const surveyKey: KeyedAttribute = {
     key: 'surveys',
-    attr: client.getHierarchy().getAttribute(recruit.mixin.Candidate, 'surveys')
+    attr: client.getHierarchy().getAttribute(recruit.mixin.Candidate, 'skills')
   }
 
   let elements = new Map<Ref<TagElement>, TagElement>()
@@ -311,7 +312,6 @@
           title: survey.title,
           color: survey.color,
           targetClass: recruit.mixin.Candidate,
-          description: '',
           category: findTagCategory(survey.title, categories)
         })
       }
@@ -567,7 +567,7 @@
         }
       }
       object.skills = [...object.skills, ...newSkills]
-      object.surveys = [...object?.surveys, ...newSurveys, 'survey']
+      object.surveys = [...object?.surveys, ...newSurveys]
 
     } catch (err: any) {
       Analytics.handleError(err)

@@ -336,6 +336,7 @@
       clear(1)
       currentApplication = await client.findOne<Application>(workbench.class.Application, { alias: app })
       currentAppAlias = currentApplication?.alias
+      console.log('currentApplication', currentApplication)
       navigatorModel = await buildNavModel(client, currentApplication)
     }
 

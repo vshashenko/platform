@@ -64,6 +64,7 @@ export interface CandidateDraft {
   onsite?: boolean
   remote?: boolean
   skills: TagReference[]
+  surveys: TagReference[]
   Forms: string[]
 }
 

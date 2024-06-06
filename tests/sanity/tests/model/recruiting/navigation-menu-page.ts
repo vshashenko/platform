@@ -15,10 +15,15 @@ export class NavigationMenuPage {
   readonly buttonTalents = (): Locator => this.page.locator('a[href$="talents"]', { hasText: 'Talents' })
   readonly buttonVacancies = (): Locator => this.page.locator('a[href$="vacancies"]', { hasText: 'Vacancies' })
   readonly buttonCompanies = (): Locator => this.page.locator('a[href$="organizations"]', { hasText: 'Companies' })
+  readonly buttonSurveys = (): Locator => this.page.locator('a[href$="surveys"]', { hasText: 'Surveys' })
 
   // Action methods to click on each button
   async clickButtonApplications (): Promise<void> {
     await this.buttonApplications().click()
+  }
+
+  async clickButtonSurveys (): Promise<void> {
+    await this.buttonSurveys().click()
   }
 
   async clickButtonMyApplications (): Promise<void> {

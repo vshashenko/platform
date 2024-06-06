@@ -5,8 +5,6 @@
   import { buildFilterKey, setFilters } from '@hcengineering/view-resources'
   import { getClient } from '@hcengineering/presentation'
   import { Filter } from '@hcengineering/view'
-  import { getEmbeddedLabel } from '@hcengineering/platform'
-  import OptimizeSurveys from './OptimizeSurveys.svelte'
   import { selectedTagElements } from '@hcengineering/tags-resources'
 
   function setFilterTag (tag: TagElement) {
@@ -49,11 +47,4 @@
     onTag
   }}
 >
-  <Button
-    label={getEmbeddedLabel('Optimize')}
-    kind={'regular'}
-    on:click={() => {
-      showPopup(OptimizeSurveys, { targetClass: recruit.mixin.Candidate })
-    }}
-  />
 </Component>
