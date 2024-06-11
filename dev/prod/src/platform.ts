@@ -38,6 +38,7 @@ import { requestId } from '@hcengineering/request'
 import { settingId } from '@hcengineering/setting'
 import { supportId } from '@hcengineering/support'
 import { tagsId } from '@hcengineering/tags'
+import { surveysId } from '@hcengineering/surveys'
 import { taskId } from '@hcengineering/task'
 import telegram, { telegramId } from '@hcengineering/telegram'
 import { templatesId } from '@hcengineering/templates'
@@ -78,6 +79,7 @@ import '@hcengineering/request-assets'
 import '@hcengineering/setting-assets'
 import '@hcengineering/support-assets'
 import '@hcengineering/tags-assets'
+import '@hcengineering/surveys-assets'
 import '@hcengineering/task-assets'
 import '@hcengineering/telegram-assets'
 import '@hcengineering/templates-assets'
@@ -170,6 +172,7 @@ function configureI18n(): void {
    addStringsLoader(settingId, async (lang: string) => await import(`@hcengineering/setting-assets/lang/${lang}.json`))
    addStringsLoader(supportId, async (lang: string) => await import(`@hcengineering/support-assets/lang/${lang}.json`))
    addStringsLoader(tagsId, async (lang: string) => await import(`@hcengineering/tags-assets/lang/${lang}.json`))
+   addStringsLoader(surveysId, async (lang: string) => await import(`@hcengineering/surveys-assets/lang/${lang}.json`))
    addStringsLoader(taskId, async (lang: string) => await import(`@hcengineering/task-assets/lang/${lang}.json`))
    addStringsLoader(telegramId, async (lang: string) => await import(`@hcengineering/telegram-assets/lang/${lang}.json`))
    addStringsLoader(templatesId, async (lang: string) => await import(`@hcengineering/templates-assets/lang/${lang}.json`))
@@ -301,6 +304,7 @@ export async function configurePlatform() {
   addLocation(templatesId, () => import(/* webpackChunkName: "templates" */ '@hcengineering/templates-resources'))
   addLocation(notificationId, () => import(/* webpackChunkName: "notification" */ '@hcengineering/notification-resources'))
   addLocation(tagsId, () => import(/* webpackChunkName: "tags" */ '@hcengineering/tags-resources'))
+  addLocation(surveysId, () => import(/* webpackChunkName: "surveys" */ '@hcengineering/surveys-resources'))
   addLocation(calendarId, () => import(/* webpackChunkName: "calendar" */ '@hcengineering/calendar-resources'))
 
   addLocation(trackerId, () => import(/* webpackChunkName: "tracker" */ '@hcengineering/tracker-resources'))
