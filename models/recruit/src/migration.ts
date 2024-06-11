@@ -180,20 +180,6 @@ async function createDefaults (client: MigrationUpgradeClient, tx: TxOperations)
     recruit.category.Other
   )
 
-  await createOrUpdate(
-    tx,
-    tags.class.TagCategory,
-    tags.space.Tags,
-    {
-      icon: recruit.icon.Surveys,
-      label: 'Other',
-      targetClass: recruit.mixin.Candidate,
-      tags: [],
-      default: true
-    },
-    recruit.category.Other
-  )
-
   for (const c of getCategories()) {
     await createOrUpdate(
       tx,
@@ -210,24 +196,8 @@ async function createDefaults (client: MigrationUpgradeClient, tx: TxOperations)
     )
   }
 
-  for (const c of getCategories()) {
-    await createOrUpdate(
-      tx,
-      tags.class.TagCategory,
-      tags.space.Tags,
-      {
-        icon: recruit.icon.Surveys,
-        label: c.label,
-        targetClass: recruit.mixin.Candidate,
-        tags: c.skills,
-        default: false
-      },
-      (recruit.category.Category + '.' + c.id) as Ref<TagCategory>
-    )
-  }
   await createSequence(tx, recruit.class.Review)
   await createSequence(tx, recruit.class.Opinion)
   await createSequence(tx, recruit.class.Applicant)
   await createSequence(tx, recruit.class.Vacancy)
-  await createSequence(tx, recruit.class.Surveys)
 }

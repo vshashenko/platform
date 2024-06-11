@@ -133,6 +133,7 @@
     "@hcengineering/server-time-resources": "^0.6.0",
     "@hcengineering/setting": "^0.6.17",
     "@hcengineering/tags": "^0.6.16",
+    "@hcengineering/surveys": "^0.6.16",
     "@hcengineering/task": "^0.6.20",
     "@hcengineering/text": "^0.6.5",
     "@hcengineering/telegram": "^0.6.21",

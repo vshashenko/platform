@@ -164,7 +164,7 @@
 
   const surveyKey: KeyedAttribute = {
     key: 'surveys',
-    attr: client.getHierarchy().getAttribute(recruit.mixin.Candidate, 'skills')
+    attr: client.getHierarchy().getAttribute(recruit.mixin.Candidate, 'surveys')
   }
 
   let elements = new Map<Ref<TagElement>, TagElement>()
@@ -211,7 +211,7 @@
       onsite: object.onsite,
       remote: object.remote,
       skills: 0,
-      surveys: 0
+      surveys: '0'
     }
 
     // Store all extra values.

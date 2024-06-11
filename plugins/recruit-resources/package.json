@@ -56,6 +56,8 @@
     "@hcengineering/rekoni": "^0.6.0",
     "@hcengineering/tags": "^0.6.16",
     "@hcengineering/tags-resources": "^0.6.0",
+    "@hcengineering/surveys": "^0.6.16",
+    "@hcengineering/surveys-resources": "^0.6.0",
     "@hcengineering/task": "^0.6.20",
     "@hcengineering/task-resources": "^0.6.0",
     "@hcengineering/text-editor": "^0.6.0",

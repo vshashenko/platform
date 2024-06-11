@@ -29,18 +29,19 @@
   export let showLoading = true
   export let inline: boolean = false
   export let disabled: boolean = false
-
+  
   let _is: any = is
   let _props: any = props
-
   $: if (!deepEqual(_is, is)) {
     _is = is
-  }
-  $: if (!deepEqual(_props, props)) {
-    _props = props
-  }
+    }
+    $: if (!deepEqual(_props, props)) {
+      _props = props
+      }
+    console.log('Component', { _is });
 
   $: component = _is != null ? getResource<any>(_is) : Promise.reject(new Error('is not defined'))
+  
 </script>
 
 {#if _is}

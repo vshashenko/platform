@@ -15,7 +15,6 @@
 <script lang="ts">
   import { Class, Doc, Ref } from '@hcengineering/core'
   import { Card, createQuery } from '@hcengineering/presentation'
-  import { findTagCategory, TagCategory } from '@hcengineering/tags'
   import {
     Button,
     DropdownLabels,
@@ -30,21 +29,14 @@
   } from '@hcengineering/ui'
   import { ColorsPopup } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
-  import tags from '../plugin'
-  import { createTagElement, getTagStyle } from '../utils'
+  import surveys from '../plugin'
+  import { getSurveyStyle } from '../utils'
+  import { log } from 'console'
 
-  export let targetClass: Ref<Class<Doc>>
   export let keyTitle: string = ''
   export let title: string = ''
 
-  let description = ''
   let color: number = getColorNumberByText(title)
-
-  let categoryWasSet = false
-  let category: Ref<TagCategory> | undefined
-
-  let categories: TagCategory[] = []
-  let categoryItems: DropdownTextItem[] = []
 
   let colorSet = false
 
@@ -52,11 +44,7 @@
     color = getColorNumberByText(title)
   }
 
-  $: if (!categoryWasSet && categories.length > 0) {
-    category = findTagCategory(title, categories)
-  }
-
-  export function canClose (): boolean {
+  export function canClose(): boolean {
     return title === ''
   }
 
@@ -64,24 +52,10 @@
 
   const query = createQuery()
 
-  query.query(tags.class.TagCategory, { targetClass }, async (result) => {
-    const newItems: DropdownTextItem[] = []
-    console.log('result', result);
-    
-    for (const r of result) {
-      newItems.push({
-        id: r._id,
-        label: r.label
-      })
-    }
-    categories = result
-    categoryItems = newItems
-  })
-
-  async function createTagElementFnc (): Promise<void> {
-    const res = await createTagElement(title, targetClass, category, description, color)
-    dispatch('close', res)
-  }
+  // async function createSurveyElementFnc(): Promise<void> {
+  //   const res = await createSurveyElement(title, color, [])
+  //   dispatch('close', res)
+  // }
 
   const showColorPopup = (evt: MouseEvent): void => {
     showPopup(
@@ -96,14 +70,12 @@
       }
     )
   }
-  console.log(categories);
-  
 </script>
 
 <Card
-  label={tags.string.AddTag}
+  label={surveys.string.AddSurvey}
   labelProps={{ word: keyTitle }}
-  okAction={createTagElementFnc}
+  okAction={() => console.log('ok')}
   canSave={title.trim().length > 0}
   on:close={() => {
     dispatch('close')
@@ -114,39 +86,37 @@
     <div class="mr-3">
       <Button size={'medium'} kind={'link-bordered'} on:click={showColorPopup}>
         <svelte:fragment slot="content">
-          <div class="color pointer-events-none" style={getTagStyle(getPlatformColorDef(color, $themeStore.dark))} />
+          <div class="color pointer-events-none" style={getSurveyStyle(getPlatformColorDef(color, $themeStore.dark))} />
         </svelte:fragment>
       </Button>
     </div>
     <div class="flex-col mt-0-5 w-full">
       <EditBox
         bind:value={title}
-        placeholder={tags.string.TagName}
+        placeholder={surveys.string.SurveyName}
         placeholderParam={{ word: keyTitle }}
         kind={'large-style'}
         autoFocus
       />
-      <div class="mt-2">
-        <EditBox bind:value={description} placeholder={tags.string.TagDescriptionPlaceholder} kind={'small-style'} />
-      </div>
     </div>
+    
   </div>
   <svelte:fragment slot="pool">
-    {#if categories.length > 1}
       <div class="ml-12">
         <DropdownLabels
           icon={IconFolder}
-          label={tags.string.CategoryLabel}
+          label={surveys.string.SurveyCreateLabel}
           kind={'regular'}
           size={'large'}
-          bind:selected={category}
-          items={categoryItems}
+          bind:selected={title}
+          items={[
+            { label: 'Category 1', value: '1' },
+            { label: 'Category 2', value: '2' },
+            { label: 'Category 3', value: '3' }]}
           on:selected={() => {
-            categoryWasSet = true
           }}
         />
       </div>
-    {/if}
   </svelte:fragment>
 </Card>
 

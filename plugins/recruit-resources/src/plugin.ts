@@ -74,7 +74,7 @@ export default mergeIds(recruitId, recruit, {
     Remote: '' as IntlString,
     SkillLabel: '' as IntlString,
     SkillsLabel: '' as IntlString,
-    SkillCreateLsabel: '' as IntlString,
+    SkillCreateLabel: '' as IntlString,
     SurveyLabel: '' as IntlString,
     SurveysLabel: '' as IntlString,
     SurveyCreateLabel: '' as IntlString,

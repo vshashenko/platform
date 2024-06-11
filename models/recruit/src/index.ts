@@ -225,7 +225,7 @@ export function createModel (builder: Builder): void {
             accessLevel: AccountRole.User,
             icon: recruit.icon.Surveys,
             label: recruit.string.SurveysLabel,
-            createItemLabel: recruit.string.SkillCreateLabel,
+            createItemLabel: recruit.string.SurveyCreateLabel,
             position: 'bottom'
           },
           {

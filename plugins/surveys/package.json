@@ -1,6 +1,6 @@
 {
-  "name": "@hcengineering/recruit",
-  "version": "0.6.29",
+  "name": "@hcengineering/surveys",
+  "version": "0.6.16",
   "main": "lib/index.js",
   "svelte": "src/index.ts",
   "types": "types/index.d.ts",
@@ -10,6 +10,7 @@
     "tsconfig.json"
   ],
   "author": "Anticrm Platform Contributors",
+  "template": "@hcengineering/platform-package",
   "license": "EPL-2.0",
   "scripts": {
     "build": "compile",
@@ -39,13 +40,8 @@
   "dependencies": {
     "@hcengineering/platform": "^0.6.11",
     "@hcengineering/core": "^0.6.32",
-    "@hcengineering/contact": "^0.6.24",
-    "@hcengineering/chunter": "^0.6.20",
-    "@hcengineering/task": "^0.6.20",
-    "@hcengineering/calendar": "^0.6.24",
-    "@hcengineering/ui": "^0.6.15",
-    "@hcengineering/tags": "^0.6.16",
-    "@hcengineering/surveys": "^0.6.16"
+    "@hcengineering/view": "^0.6.13",
+    "@hcengineering/ui": "^0.6.15"
   },
   "repository": "https://github.com/hcengineering/platform",
   "publishConfig": {
