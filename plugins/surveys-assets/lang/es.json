@@ -14,6 +14,7 @@
     "AddLabel": "Añadir etiqueta",
     "EditSurvey": "Editar {word}",
     "SurveyCreateLabel": "Etiqueta",
+    "AddFormItems": "Añadir elemento de formulario",
     "CancelLabel": "Cancelar",
     "SearchCreate": "Buscar/Nombre...",
     "QuickAddItems": "Agregar {word} rápidamente \"{title}\"",

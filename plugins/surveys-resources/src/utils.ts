@@ -2,7 +2,7 @@
 
 import { type Data, type Ref } from '@hcengineering/core'
 import { getClient } from '@hcengineering/presentation'
-import { type SurveyElement } from '@hcengineering/surveys'
+import { FormItem, type SurveyElement } from '@hcengineering/surveys'
 import { type ColorDefinition, getColorNumberByText } from '@hcengineering/ui'
 import { writable } from 'svelte/store'
 import surveys from './plugin'
@@ -23,16 +23,15 @@ export const selectedSurveyElements = writable<Array<Ref<SurveyElement>>>([])
 /**
  * @public
  */
-export async function createSurveyElement (
+export async function createSurvey (
   title: string,
   color?: number | null,
-  formItems?: Ref<any> | null
+  formItems?: FormItem | null
 ): Promise<Ref<SurveyElement>> {
   const surveyElement: Data<any> = {
     title,
     color: color ?? getColorNumberByText(title),
     formItems: formItems ?? []
-
   }
 
   const client = getClient()

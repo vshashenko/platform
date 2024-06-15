@@ -1,24 +1,8 @@
-<!--
-// Copyright © 2022 Hardcore Engineering Inc.
-//
-// Licensed under the Eclipse Public License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License. You may
-// obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//
-// See the License for the specific language governing permissions and
-// limitations under the License.
--->
 <script lang="ts">
-  import { Class, Doc, Ref } from '@hcengineering/core'
-  import { Card, createQuery } from '@hcengineering/presentation'
+  import { Card } from '@hcengineering/presentation'
   import {
     Button,
     DropdownLabels,
-    DropdownTextItem,
     EditBox,
     eventToHTMLElement,
     getColorNumberByText,
@@ -30,18 +14,25 @@
   import { ColorsPopup } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
   import surveys from '../plugin'
-  import { getSurveyStyle } from '../utils'
-  import { log } from 'console'
+  import { createSurvey, getSurveyStyle } from '../utils'
+  import LongText from './formItems/LongText.svelte'
+  import ShortText from './formItems/ShortText.svelte'
+  import Select from './formItems/Select.svelte'
+  import Checkbox from './formItems/Checkbox.svelte'
 
   export let keyTitle: string = ''
   export let title: string = ''
 
   let color: number = getColorNumberByText(title)
-
   let colorSet = false
 
   $: if (!colorSet) {
     color = getColorNumberByText(title)
+  }
+
+  async function createSurveyFnc (): Promise<void> {
+    const res = await createSurvey(title, color, formElements)
+    dispatch('close', res)
   }
 
   export function canClose(): boolean {
@@ -49,13 +40,6 @@
   }
 
   const dispatch = createEventDispatcher()
-
-  const query = createQuery()
-
-  // async function createSurveyElementFnc(): Promise<void> {
-  //   const res = await createSurveyElement(title, color, [])
-  //   dispatch('close', res)
-  // }
 
   const showColorPopup = (evt: MouseEvent): void => {
     showPopup(
@@ -70,12 +54,50 @@
       }
     )
   }
+
+  // Form elements list
+  type FormElementType = 'long-text' | 'short-text' | 'select' | 'checkbox' | 'range'
+
+  interface FormElement {
+    id: number
+    type: FormElementType
+    question: string
+    options?: string[]
+    defaultValue?: string
+  }
+
+  let formElements: FormElement[] = []
+  let selected: string | string[] = []
+
+  // Add form element based on selection
+  function addFormElement(type: FormElementType): void {
+    const newElement: FormElement = { id: Date.now(), type, question: '', options: type === 'select' || type === 'checkbox' ? [''] : undefined, defaultValue: ''}
+    formElements = [...formElements, newElement]
+  console.log('formElements', formElements);
+
+  }
+
+  // Update form element
+  function updateQuestion(id: number, newQuestion: string): void {
+    formElements = formElements.map(element => element.id === id ? { ...element, question: newQuestion } : element)
+  }
+
+  // Update form element default value
+
+  function updateDefaultValue(id: number, newDefaultValue: string): void {
+    formElements = formElements.map(element => element.id === id ? { ...element, defaultValue: newDefaultValue } : element)
+  }
+
+  function updateOptions(id: number, newOptions: string[]): void {
+    formElements = formElements.map(element => element.id === id ? { ...element, options: newOptions } : element)
+  }
+
 </script>
 
 <Card
   label={surveys.string.AddSurvey}
   labelProps={{ word: keyTitle }}
-  okAction={() => console.log('ok')}
+  okAction={() => createSurveyFnc()}
   canSave={title.trim().length > 0}
   on:close={() => {
     dispatch('close')
@@ -99,25 +121,59 @@
         autoFocus
       />
     </div>
-    
   </div>
   <svelte:fragment slot="pool">
-      <div class="ml-12">
-        <DropdownLabels
-          icon={IconFolder}
-          label={surveys.string.SurveyCreateLabel}
-          kind={'regular'}
-          size={'large'}
-          bind:selected={title}
-          items={[
-            { label: 'Category 1', value: '1' },
-            { label: 'Category 2', value: '2' },
-            { label: 'Category 3', value: '3' }]}
-          on:selected={() => {
-          }}
-        />
-      </div>
+    <div class="ml-12">      
+      <DropdownLabels
+        icon={IconFolder}
+        label={surveys.string.SurveyCreateLabel}
+        kind={'regular'}
+        size={'large'}
+        bind:selected
+        items={[
+          { label: 'Long Text', id: 'long-text' },
+          { label: 'Short Text', id: 'short-text' },
+          { label: 'Select', id: 'select' },
+          { label: 'Checkbox', id: 'checkbox' },
+        ]}
+        on:selected={(event) => {
+          const selectedValue = event.detail
+          addFormElement(selectedValue)
+        }}
+      />
+    </div>
   </svelte:fragment>
+
+  <div class="form-elements">
+    {#each formElements as element (element.id)}
+      {#if element.type === 'long-text'}
+        <LongText question={element.question}  
+        on:changeQuestion={(event) => updateQuestion(element.id, event.detail)} 
+        on:changeDefaultValue={(event) => updateDefaultValue(element.id, event.detail)}
+        />
+      {/if}
+      {#if element.type === 'short-text'}
+        <ShortText question={element.question} 
+        on:changeQuestion={(event) => updateQuestion(element.id, event.detail)} 
+        on:changeDefaultValue={(event) => updateDefaultValue(element.id, event.detail)}
+        />
+      {/if}
+      {#if element.type === 'select'}
+        <Select 
+        question={element.question} 
+        options={element.options} 
+        on:changeDefaultValue={(event) => updateDefaultValue(element.id, event.detail)}
+        on:changeQuestion={(event) => updateQuestion(element.id, event.detail)} on:changeOptions={(event) => updateOptions(element.id, event.detail)} />
+      {/if}
+      {#if element.type === 'checkbox'}
+        <Checkbox 
+        question={element.question} 
+        options={element.options} 
+        on:changeDefaultValue={(event) => updateDefaultValue(element.id, event.detail)}
+        on:changeQuestion={(event) => updateQuestion(element.id, event.detail)} on:changeOptions={(event) => updateOptions(element.id, event.detail)} />
+      {/if}
+    {/each}
+  </div>
 </Card>
 
 <style lang="scss">
@@ -125,5 +181,11 @@
     width: 1rem;
     height: 1rem;
     border-radius: 0.25rem;
+  }
+  .form-elements {
+    margin-top: 1rem;
+  }
+  .form-element {
+    margin-bottom: 1rem;
   }
 </style>

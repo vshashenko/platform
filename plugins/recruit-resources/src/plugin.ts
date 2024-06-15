@@ -78,6 +78,7 @@ export default mergeIds(recruitId, recruit, {
     SurveyLabel: '' as IntlString,
     SurveysLabel: '' as IntlString,
     SurveyCreateLabel: '' as IntlString,
+    AddFormItems: '' as IntlString,
     General: '' as IntlString,
     Members: '' as IntlString,
     Yes: '' as IntlString,

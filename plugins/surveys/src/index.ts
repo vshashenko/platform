@@ -25,17 +25,24 @@ import { FilterMode } from '@hcengineering/view'
 export interface SurveyElement extends Doc {
   title: string
   color: number
-  formItems: FormItems[]
+  formItems: FormItem[]
 }
 
 /**
  * @public
  */
+export type FormElementType = 'long-text' | 'short-text' | 'select' | 'checkbox' | 'range'
 
-export interface FormItems extends Doc {
-  label: string
-  value: string
-  point: number
+/**
+ * @public
+ */
+
+export interface FormItem {
+  id: number
+  type: FormElementType
+  question: string
+  options?: string[]
+  defaultValue?: string
 }
 
 /**

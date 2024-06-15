@@ -23,6 +23,9 @@ export default mergeIds(surveysId, surveys, {
   // Without it, CLI version is failed with some svelte dependency exception.
   component: {
     Surveys: '' as AnyComponent,
+    SurveyElementPresenter: '' as AnyComponent,
+    SurveysView: '' as AnyComponent,
+    SurveyElement: '' as AnyComponent
   },
   string: {
     SurveyElementLabel: '' as IntlString,

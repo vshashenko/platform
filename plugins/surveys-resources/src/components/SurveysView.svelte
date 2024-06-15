@@ -13,12 +13,12 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Class, Doc, Ref } from '@hcengineering/core'
+  import { Class, Doc, FindOptions, Ref } from '@hcengineering/core'
   import { IntlString, translate } from '@hcengineering/platform'
   import { Button, Label, showPopup, IconAdd, themeStore } from '@hcengineering/ui'
   import surveys from '../plugin'
   import CreateSurveyElement from './CreateSurveyElement.svelte'
-
+  import { TableBrowser } from '@hcengineering/view-resources'
   export let title: IntlString = surveys.string.Surveys
   export let item: IntlString = surveys.string.Survey
   export let сreateItemLabel: IntlString = surveys.string.SurveyCreateLabel
@@ -32,6 +32,7 @@
   function showCreateDialog() {
     showPopup(CreateSurveyElement, { targetClass, keyTitle }, 'top')
   }
+  console.log(surveys.class);
   
 </script>
 
@@ -45,3 +46,17 @@
     <Button icon={IconAdd} label={сreateItemLabel} kind={'primary'} on:click={showCreateDialog} />
   </div>
 </div>
+<!-- <TableBrowser
+  _class={surveys.class.SurveyElement}
+  config={[
+    {
+      key: '',
+      label: item,
+      presenter: surveys.component.SurveyElementPresenter,
+      props: { edit: true, keyTitle },
+      sortingKey: 'title'
+    }
+  ]}
+  query={[]}
+  showNotification
+/> -->

@@ -13,11 +13,11 @@
 // limitations under the License.
 
 import { type Domain, IndexKind } from '@hcengineering/core'
-import { type Builder, Index, Model, Prop, TypeString, UX, TypeAny } from '@hcengineering/model'
+import { type Builder, Index, Prop, TypeString, TypeAny, Model, UX } from '@hcengineering/model'
 import core, { TDoc } from '@hcengineering/model-core'
 import view from '@hcengineering/model-view'
 import type {
-  FormItems,
+  FormItem,
   SurveyElement
 } from '@hcengineering/surveys'
 import surveys from './plugin'
@@ -28,6 +28,8 @@ export { surveys as default }
 
 export const DOMAIN_SURVEYS = 'surveys' as Domain
 
+@Model(surveys.class.SurveyElement, core.class.Doc, DOMAIN_SURVEYS)
+@UX(surveys.string.SurveyElementLabel)
 export class TSurveyElement extends TDoc implements SurveyElement {
   @Prop(TypeString(), surveys.string.TitleLabel)
   @Index(IndexKind.FullText)
@@ -37,7 +39,7 @@ export class TSurveyElement extends TDoc implements SurveyElement {
     color!: number
 
   @Prop(TypeAny(undefined, surveys.string.FormItemsLabel, undefined), surveys.string.FormItemsLabel)
-    formItems!: FormItems[]
+    formItems!: FormItem[]
 }
 
 export function createModel (builder: Builder): void {

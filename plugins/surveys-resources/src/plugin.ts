@@ -19,7 +19,9 @@ export default mergeIds(surveysId, surveys, {
   component: {
   },
   string: {
+    AddFormItems: '' as IntlString,
     NoSurveys: '' as IntlString,
+    SurveyElement: '' as IntlString,
     AddSurvey: '' as IntlString,
     EditSurvey: '' as IntlString,
     AddSurveyTooltip: '' as IntlString,
@@ -42,7 +44,6 @@ export default mergeIds(surveysId, surveys, {
     SelectAll: '' as IntlString,
     SelectNone: '' as IntlString,
     ApplySurveys: '' as IntlString,
-
     Weight: '' as IntlString,
     Expert: '' as IntlString,
     Meaningfull: '' as IntlString,

@@ -38,7 +38,8 @@ export default async (): Promise<Resources> => ({
     SurveysView,
     SurveysEditor,
     SurveysDropdownEditor,
-    SurveysEditorPopup
+    SurveysEditorPopup,
+    SurveyElement
   },
   actionImpl: {
     Open: (value: SurveyElementType, evt: MouseEvent) => {
