@@ -44,7 +44,7 @@
     resultQuery = search === '' ? { targetClass } : { $search: search, targetClass }
     if (category !== undefined) {
       resultQuery.category = category
-    }
+    }    
   }
 
   function showCreateDialog () {
@@ -87,6 +87,7 @@
       (tagElements?.get(a._id as Ref<TagElement>)?.count ?? 0) ?? 0
 
     // $: twoRows = $deviceInfo.twoRows
+    
 </script>
 
 <div class="ac-header full divide">

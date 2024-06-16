@@ -82,6 +82,7 @@ import { serverRecruitId } from '@hcengineering/server-recruit'
 import { serverRequestId } from '@hcengineering/server-request'
 import { serverSettingId } from '@hcengineering/server-setting'
 import { serverTagsId } from '@hcengineering/server-tags'
+import { serverSurveysId } from '@hcengineering/server-surveys'
 import { serverTaskId } from '@hcengineering/server-task'
 import { serverTelegramId } from '@hcengineering/server-telegram'
 import { serverTimeId } from '@hcengineering/server-time'
@@ -120,6 +121,7 @@ import { requestId } from '@hcengineering/request'
 import { settingId } from '@hcengineering/setting'
 import { supportId } from '@hcengineering/support'
 import { tagsId } from '@hcengineering/tags'
+import { surveysId } from '@hcengineering/surveys'
 import { taskId } from '@hcengineering/task'
 import { telegramId } from '@hcengineering/telegram'
 import { templatesId } from '@hcengineering/templates'
@@ -155,6 +157,7 @@ import requestEn from '@hcengineering/request-assets/lang/en.json'
 import settingEn from '@hcengineering/setting-assets/lang/en.json'
 import supportEn from '@hcengineering/support-assets/lang/en.json'
 import tagsEn from '@hcengineering/tags-assets/lang/en.json'
+import surveysEn from '@hcengineering/surveys-assets/lang/en.json'
 import taskEn from '@hcengineering/task-assets/lang/en.json'
 import telegramEn from '@hcengineering/telegram-assets/lang/en.json'
 import templatesEn from '@hcengineering/templates-assets/lang/en.json'
@@ -187,6 +190,7 @@ addStringsLoader(inventoryId, async (lang: string) => inventoryEn)
 addStringsLoader(templatesId, async (lang: string) => templatesEn)
 addStringsLoader(notificationId, async (lang: string) => notificationEn)
 addStringsLoader(tagsId, async (lang: string) => tagsEn)
+addStringsLoader(surveysId, async (lang: string) => surveysEn)
 addStringsLoader(calendarId, async (lang: string) => calendarEn)
 addStringsLoader(trackerId, async (lang: string) => trackerEn)
 addStringsLoader(boardId, async (lang: string) => boardEn)
@@ -234,6 +238,7 @@ export function start (
   addLocation(serverTaskId, () => import('@hcengineering/server-task-resources'))
   addLocation(serverTrackerId, () => import('@hcengineering/server-tracker-resources'))
   addLocation(serverTagsId, () => import('@hcengineering/server-tags-resources'))
+  addLocation(serverSurveysId, () => import('@hcengineering/server-surveys-resources'))
   addLocation(serverCalendarId, () => import('@hcengineering/server-calendar-resources'))
   addLocation(serverGmailId, () => import('@hcengineering/server-gmail-resources'))
   addLocation(serverTelegramId, () => import('@hcengineering/server-telegram-resources'))

@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { Button, IconAdd } from '@hcengineering/ui'
   export let question: string
   export let options: string[]
   import { createEventDispatcher } from 'svelte'
@@ -58,7 +59,7 @@
         bind:value={newOption}
         placeholder="Enter new option"
       />
-      <button class="add-btn" on:click={addOption}>+</button>
+      <Button icon={IconAdd} kind={'primary'} on:click={addOption} />
     </div>
   </div>
 

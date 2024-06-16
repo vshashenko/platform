@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import type { Class, Doc, Ref, Space } from '@hcengineering/core'
+import type { AttachedDoc, Class, Doc, Ref, Space } from '@hcengineering/core'
 import type { Asset, IntlString, Plugin } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
 import { AnyComponent } from '@hcengineering/ui'
@@ -26,6 +26,10 @@ export interface SurveyElement extends Doc {
   title: string
   color: number
   formItems: FormItem[]
+}
+export interface SurveyReference extends AttachedDoc {
+  title: string
+  color: number
 }
 
 /**
@@ -46,13 +50,6 @@ export interface FormItem {
 }
 
 /**
- * Defined set of skills per category.
- *
- * Will be used as skill category templates or category detection
- * @public
- */
-
-/**
  * @public
  */
 export const surveysId = 'surveys' as Plugin
@@ -62,7 +59,8 @@ export const surveysId = 'surveys' as Plugin
  */
 const surveysPlugin = plugin(surveysId, {
   class: {
-    SurveyElement: '' as Ref<Class<SurveyElement>>
+    SurveyElement: '' as Ref<Class<SurveyElement>>,
+    SurveyReference: '' as Ref<Class<SurveyReference>>
   },
   space: {
     Surveys: '' as Ref<Space>

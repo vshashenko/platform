@@ -30,6 +30,7 @@
   $: if (value !== undefined) {
     const baseDomain = hierarchy.getDomain(value._class)
     const ancestors = hierarchy.getAncestors(value._class)
+    
     let parentClass: Ref<Class<Doc>> = value._class
     for (const ancestor of ancestors) {
       try {

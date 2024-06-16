@@ -141,6 +141,8 @@
     "@hcengineering/server-recruit-resources": "^0.6.0",
     "@hcengineering/server-tags": "^0.6.0",
     "@hcengineering/server-tags-resources": "^0.6.0",
+    "@hcengineering/server-surveys": "^0.6.0",
+    "@hcengineering/server-surveys-resources": "^0.6.0",
     "@hcengineering/server-task": "^0.6.0",
     "@hcengineering/server-task-resources": "^0.6.0",
     "@hcengineering/calendar": "^0.6.24",

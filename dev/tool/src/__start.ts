@@ -39,6 +39,7 @@ import { serverRecruitId } from '@hcengineering/server-recruit'
 import { serverRequestId } from '@hcengineering/server-request'
 import { serverSettingId } from '@hcengineering/server-setting'
 import { serverTagsId } from '@hcengineering/server-tags'
+import { serverSurveysId } from '@hcengineering/server-surveys'
 import { serverTaskId } from '@hcengineering/server-task'
 import { serverTelegramId } from '@hcengineering/server-telegram'
 import { serverTimeId } from '@hcengineering/server-time'
@@ -58,6 +59,7 @@ addLocation(serverSettingId, () => import('@hcengineering/server-setting-resourc
 addLocation(serverTaskId, () => import('@hcengineering/server-task-resources'))
 addLocation(serverTrackerId, () => import('@hcengineering/server-tracker-resources'))
 addLocation(serverTagsId, () => import('@hcengineering/server-tags-resources'))
+addLocation(serverSurveysId, () => import('@hcengineering/server-surveys-resources'))
 addLocation(serverCalendarId, () => import('@hcengineering/server-calendar-resources'))
 addLocation(serverGmailId, () => import('@hcengineering/server-gmail-resources'))
 addLocation(serverTelegramId, () => import('@hcengineering/server-telegram-resources'))

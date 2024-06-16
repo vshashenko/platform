@@ -26,7 +26,7 @@
   } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import surveys from '../plugin'
-  import { getSurveyStyle, surveyLevel } from '../utils'
+  import { getSurveyStyle } from '../utils'
 
   export let survey: SurveyReference | undefined = undefined
   export let element: SurveyElement | undefined = undefined
@@ -39,7 +39,7 @@
 
   $: name = element?.title ?? survey?.title ?? 'New item'
 
-  $: surveyIcon = schema !== '9' ? undefined : surveyLevel[(((survey?.weight ?? 0) % 3) + 1) as 1 | 2 | 3]
+  $: surveyIcon = undefined
 </script>
 
 {#if inline}
@@ -53,7 +53,7 @@
       label: surveys.string.SurveyTooltip,
       props: {
         text: `${name} ${
-          element?.description !== undefined && element?.description.length > 0 ? ': ' + element?.description : ''
+          element?.title !== undefined && element?.title.length > 0 ? ': ' + element?.title : ''
         }`
       },
       direction: 'top'
@@ -72,7 +72,7 @@
       label: surveys.string.SurveyTooltip,
       props: {
         text: `${name} ${
-          element?.description !== undefined && element?.description.length > 0 ? ': ' + element?.description : ''
+          element?.title !== undefined && element?.title.length > 0 ? ': ' + element?.title : ''
         }`
       },
       direction: 'top'

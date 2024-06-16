@@ -52,41 +52,4 @@ export function createModel (builder: Builder): void {
   builder.mixin(surveys.class.SurveyElement, core.class.Class, view.mixin.ObjectPresenter, {
     presenter: surveys.component.SurveyElementPresenter
   })
-
-  builder.mixin(surveys.class.SurveyElement, core.class.Class, view.mixin.IgnoreActions, {
-    actions: [view.action.Open]
-  })
-
-  builder.createDoc(
-    view.class.FilterMode,
-    core.space.Model,
-    {
-      label: view.string.FilterIsEither,
-      selectedLabel: view.string.FilterIsEitherPlural,
-      result: surveys.function.FilterSurveysInResult
-    },
-    surveys.filter.FilterSurveysIn
-  )
-
-  builder.createDoc(
-    view.class.FilterMode,
-    core.space.Model,
-    {
-      label: view.string.FilterIsNot,
-      result: surveys.function.FilterSurveysNinResult
-    },
-    surveys.filter.FilterSurveysNin
-  )
-  builder.createDoc(core.class.DomainIndexConfiguration, core.space.Model, {
-    domain: DOMAIN_SURVEYS,
-    disabled: [
-      { modifiedOn: 1 },
-      { modifiedBy: 1 },
-      { createdBy: 1 },
-      { createdOn: 1 },
-      { space: 1 },
-      { attachedToClass: 1 },
-      { createdOn: -1 }
-    ]
-  })
 }

@@ -19,6 +19,7 @@
   import surveys from '../plugin'
   import CreateSurveyElement from './CreateSurveyElement.svelte'
   import { TableBrowser } from '@hcengineering/view-resources'
+  import SurveyElementPresenter from './SurveyElementPresenter.svelte'
   export let title: IntlString = surveys.string.Surveys
   export let item: IntlString = surveys.string.Survey
   export let сreateItemLabel: IntlString = surveys.string.SurveyCreateLabel
@@ -46,17 +47,17 @@
     <Button icon={IconAdd} label={сreateItemLabel} kind={'primary'} on:click={showCreateDialog} />
   </div>
 </div>
-<!-- <TableBrowser
+<TableBrowser
   _class={surveys.class.SurveyElement}
   config={[
     {
       key: '',
       label: item,
-      presenter: surveys.component.SurveyElementPresenter,
+      presenter: SurveyElementPresenter,
       props: { edit: true, keyTitle },
       sortingKey: 'title'
     }
   ]}
   query={[]}
   showNotification
-/> -->
+/>

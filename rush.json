@@ -1223,6 +1223,11 @@
       "shouldPublish": false
     },
     {
+      "packageName": "@hcengineering/server-surveys",
+      "projectFolder": "server-plugins/surveys",
+      "shouldPublish": false
+    },
+    {
       "packageName": "@hcengineering/model-server-tags",
       "projectFolder": "models/server-tags",
       "shouldPublish": false
@@ -1230,6 +1235,11 @@
     {
       "packageName": "@hcengineering/server-tags-resources",
       "projectFolder": "server-plugins/tags-resources",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/server-surveys-resources",
+      "projectFolder": "server-plugins/surveys-resources",
       "shouldPublish": false
     },
     {

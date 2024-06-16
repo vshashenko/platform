@@ -272,14 +272,10 @@
         }
       )
     }
-
     const categories = await client.findAll(tags.class.TagCategory, { targetClass: recruit.mixin.Candidate })
     // Tag elements
     const skillTagElements = toIdMap(
       await client.findAll(tags.class.TagElement, { _id: { $in: object.skills.map((it) => it.tag) } })
-    )
-    const surveyTagElements = toIdMap(
-      await client.findAll(tags.class.TagElement, { _id: { $in: object?.surveys.map((it) => it.tag) } })
     )
     for (const skill of object.skills) {
       // Create update tag if missing
@@ -297,29 +293,6 @@
         color: skill.color,
         tag: skill.tag,
         weight: skill.weight
-      })
-    }
-
-    await applyOps.commit()
-    draftController.remove()
-    dispatch('close', _id)
-    resetObject()
-
-    for (const survey of object?.surveys) {
-      // Create update tag if missing
-      if (!surveyTagElements.has(survey.tag)) {
-        survey.tag = await client.createDoc(tags.class.TagElement, survey.space, {
-          title: survey.title,
-          color: survey.color,
-          targetClass: recruit.mixin.Candidate,
-          category: findTagCategory(survey.title, categories)
-        })
-      }
-      await applyOps.addCollection(survey._class, survey.space, _id, recruit.mixin.Candidate, 'surveys', {
-        title: survey.title,
-        color: survey.color,
-        tag: survey.tag,
-        weight: survey.weight
       })
     }
 

@@ -38,7 +38,8 @@
 
   // If defined, will show a number of dummy items before real data will appear.
   export let loadingProps: LoadingProps | undefined = undefined
-
+    console.log(options);
+    
   let table: Table
   const listProvider = new ListSelectionProvider(
     (offset: 1 | -1 | 0, of?: Doc, dir?: SelectDirection, noScroll?: boolean) => {
