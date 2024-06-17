@@ -95,6 +95,7 @@ import {
 } from '@hcengineering/model-server-controlled-documents'
 
 import { type Plugin } from '@hcengineering/platform'
+import { surveysId, createModel as surveysModel } from '@hcengineering/model-surveys'
 
 interface ConfigurablePlugin extends Omit<Data<PluginConfiguration>, 'pluginId' | 'transactions'> {}
 
@@ -138,6 +139,7 @@ export default function buildModel (enabled: string[] = ['*'], disabled: string[
     [attachmentModel, attachmentId],
     [guestModel, guestId],
     [tagsModel, tagsId],
+    [surveysModel, surveysId],
     [viewModel, viewId],
     [workbenchModel, workbenchId],
     [

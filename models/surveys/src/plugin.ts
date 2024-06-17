@@ -16,7 +16,7 @@ import { type IntlString, mergeIds } from '@hcengineering/platform'
 import { surveysId } from '@hcengineering/surveys'
 import surveys from '@hcengineering/surveys-resources/src/plugin'
 import type { AnyComponent } from '@hcengineering/ui/src/types'
-import { type ViewAction } from '@hcengineering/model-view'
+import { type ViewAction } from '@hcengineering/view'
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 
 export default mergeIds(surveysId, surveys, {
@@ -24,8 +24,6 @@ export default mergeIds(surveysId, surveys, {
   component: {
     Surveys: '' as AnyComponent,
     SurveyElementPresenter: '' as AnyComponent,
-    SurveysView: '' as AnyComponent,
-    SurveyElement: '' as AnyComponent
   },
   string: {
     SurveyElementLabel: '' as IntlString,

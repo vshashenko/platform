@@ -51,6 +51,7 @@
     "@hcengineering/model-server-task": "^0.6.0",
     "@hcengineering/model-server-tracker": "^0.6.0",
     "@hcengineering/model-server-tags": "^0.6.0",
+    "@hcengineering/model-surveys": "^0.6.0",
     "@hcengineering/model-server-recruit": "^0.6.0",
     "@hcengineering/model-server-lead": "^0.6.0",
     "@hcengineering/model-server-inventory": "^0.6.0",

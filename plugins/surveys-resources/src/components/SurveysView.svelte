@@ -53,7 +53,7 @@
     {
       key: '',
       label: item,
-      presenter: SurveyElementPresenter,
+      presenter: surveys.component.SurveyElementPresenter,
       props: { edit: true, keyTitle },
       sortingKey: 'title'
     }

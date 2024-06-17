@@ -88,7 +88,7 @@
   let contentPanel: HTMLElement
 
   const { setTheme } = getContext<{ setTheme: (theme: string) => void }>('theme')
-
+  const h = getClient().getHierarchy()
   let currentAppAlias: string | undefined
   let currentSpace: Ref<Space> | undefined
   let currentSpecial: string | undefined
@@ -585,8 +585,11 @@
     person && client.getHierarchy().hasMixin(person, contact.mixin.Employee)
       ? !client.getHierarchy().as(person, contact.mixin.Employee).active
       : false
+      
+  console.log('h.getDescendants',h.getDescendants(core.class.Doc));
+  
 </script>
-
+<!-- {h.getDescendants(core.class.Doc)} -->
 {#if person && deactivated && !isAdminUser()}
   <div class="flex-col-center justify-center h-full flex-grow">
     <h1><Label label={workbench.string.AccountDisabled} /></h1>

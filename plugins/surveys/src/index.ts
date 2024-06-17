@@ -74,7 +74,6 @@ const surveysPlugin = plugin(surveysId, {
     SurveysDropdownEditor: '' as AnyComponent,
     SurveysAttributeEditor: '' as AnyComponent,
     LabelsPresenter: '' as AnyComponent,
-    SurveyElementPresenter: '' as AnyComponent,
     SurveysEditorPopup: '' as AnyComponent
   },
   string: {

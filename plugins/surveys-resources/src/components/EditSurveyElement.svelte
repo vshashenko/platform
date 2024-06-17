@@ -15,10 +15,11 @@
 <script lang="ts">
   import core, { Data, DocumentUpdate } from '@hcengineering/core'
   import { Card, createQuery, getClient } from '@hcengineering/presentation'
-  import { SurveyElement, SurveyReference } from '@hcengineering/surveys'
+  import { FormItem, SurveyElement } from '@hcengineering/surveys'
   import {
     DropdownLabels,
     EditBox,
+    IconFolder,
     eventToHTMLElement,
     getPlatformColorDef,
     showPopup,
@@ -29,12 +30,18 @@
   import { createEventDispatcher } from 'svelte'
   import surveys from '../plugin'
   import { getSurveyStyle } from '../utils'
+  import LongText from './formItems/LongText.svelte'
+  import ShortText from './formItems/ShortText.svelte'
+  import Select from './formItems/Select.svelte'
+  import Checkbox from './formItems/Checkbox.svelte'
 
   export let value: SurveyElement
   export let keyTitle: string = ''
 
   const dispatch = createEventDispatcher()
   const client = getClient()
+
+  let formItems: FormItem[] = []
 
   const data: Omit<Data<SurveyElement>, 'targetClass'> = {
     title: value.title,
@@ -44,11 +51,15 @@
 
   async function updateElement() {
     const documentUpdate: DocumentUpdate<SurveyElement> = {}
-    const refUpdate: DocumentUpdate<SurveyReference> = {}
+    const refUpdate: DocumentUpdate<any> = {}
 
     if (data.title !== value.title) {
       documentUpdate.title = data.title
       refUpdate.title = data.title
+    }
+
+    if (data.formItems !== value.formItems) {
+      documentUpdate.formItems = data.formItems
     }
 
     if (data.color !== value.color) {
@@ -59,19 +70,29 @@
     if (Object.keys(documentUpdate).length > 0) {
       await client.update(value, documentUpdate)
 
-      if (Object.keys(refUpdate).length > 0) {
-        const references = await client.findAll(surveys.class.SurveyReference, { survey: value._id })
-        for (const r of references) {
-          const u = client.txFactory.createTxUpdateDoc(r._class, r.space, r._id, refUpdate)
-          u.space = core.space.DerivedTx
-          await client.tx(u)
-        }
-      }
+      // if (Object.keys(refUpdate).length > 0) {
+      //   const references = await client.findAll(surveys.class.SurveyReference, { survey: value._id })
+      //   for (const r of references) {
+      //     const u = client.txFactory.createTxUpdateDoc(r._class, r.space, r._id, refUpdate)
+      //     u.space = core.space.DerivedTx
+      //     await client.tx(u)
+      //   }
+      // }
     }
 
     dispatch('close')
   }
 
+  const query = createQuery()
+  // query.query(surveys.class.SurveyCategory, { targetClass: value.targetClass }, async (result) => {
+  //   const newItems: FormItem[] = []
+  //   for (const r of result) {
+  //     // newItems.push()
+  //   }
+  //   formItems = newItems
+  // })
+
+  console.log(value)
 </script>
 
 <Card
@@ -106,19 +127,43 @@
             )
           }}
         />
+        {#each value.formItems as element (element.id)}
+          {#if element.type === 'long-text'}
+            <LongText question={element.question} />
+          {/if}
+          {#if element.type === 'short-text'}
+            <ShortText question={element.question} />
+          {/if}
+          {#if element.type === 'select'}
+            <Select question={element.question} options={element.options} />
+          {/if}
+          {#if element.type === 'checkbox'}
+            <Checkbox question={element.question} options={element.options} />
+          {/if}
+        {/each}
         <EditBox
           placeholder={surveys.string.SurveyName}
           placeholderParam={{ word: keyTitle }}
           bind:value={data.title}
         />
       </div>
-
-      <div class="fs-title mt-4">
-        <EditBox placeholder={surveys.string.SurveyDescriptionPlaceholder} bind:value={data.description} />
-      </div>
-
-      <div class="text-sm mt-4">
-        <DropdownLabels label={surveys.string.CategoryLabel} bind:selected={data.category} items={categoryItems} />
+      <div class="ml-12">
+        <DropdownLabels
+          icon={IconFolder}
+          label={surveys.string.SurveyCreateLabel}
+          kind={'regular'}
+          size={'large'}
+          items={[
+            { label: 'Long Text', id: 'long-text' },
+            { label: 'Short Text', id: 'short-text' },
+            { label: 'Select', id: 'select' },
+            { label: 'Checkbox', id: 'checkbox' }
+          ]}
+          on:selected={(event) => {
+            const selectedValue = event.detail
+            // addFormElement(selectedValue)
+          }}
+        />
       </div>
     </div>
   </div>
