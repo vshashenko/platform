@@ -24,6 +24,7 @@ import core from '@hcengineering/model-core'
 import { generateClassNotificationTypes } from '@hcengineering/model-notification'
 import presentation from '@hcengineering/model-presentation'
 import tags from '@hcengineering/model-tags'
+import surveys from '@hcengineering/model-surveys'
 import task, { actionTemplates } from '@hcengineering/model-task'
 import tracker from '@hcengineering/model-tracker'
 import view, { createAction, showColorsViewOption, actionTemplates as viewTemplates } from '@hcengineering/model-view'
@@ -1488,6 +1489,7 @@ export function createModel (builder: Builder): void {
     childProcessingAllowed: true,
     propagateClasses: [
       tags.class.TagReference,
+      surveys.class.SurveyReference,
       chunter.class.ChatMessage,
       attachment.class.Attachment,
       contact.class.Channel

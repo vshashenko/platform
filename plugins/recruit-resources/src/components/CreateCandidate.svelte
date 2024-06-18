@@ -372,7 +372,6 @@
       const categoriesMap = toIdMap(categories)
 
       const newSkills: TagReference[] = []
-      const newSurveys: TagReference[] = []
       const formattedSkills = (doc.skills.map((s) => s.toLowerCase()) ?? []).filter(
         (skill) => !namedElements.has(skill)
       )
@@ -466,7 +465,6 @@
       }
 
       const skillsToAdd = [...new Set([...doc.skills.map((s) => s.toLowerCase()), ...refactoredSkills])]
-      const surveysToAdd = [...new Set([...doc.surveys.map((s) => s.toLowerCase()), ...refactoredSurveys])]
 
       // Create missing tag elemnts
       for (const s of skillsToAdd) {
@@ -504,43 +502,8 @@
           )
         }
       }
-      for (const s of surveysToAdd) {
-        const title = s.trim().toLowerCase()
-        let e = namedElements.get(title)
-        if (e === undefined && shouldCreateNewSurveys) {
-          // No yet tag with title
-          const category = findTagCategory(s, categories)
-          const cinstance = categoriesMap.get(category)
-          e = TxProcessor.createDoc2Doc(
-            client.txFactory.createTxCreateDoc(tags.class.TagElement, tags.space.Tags, {
-              title,
-              description: `Imported surveys ${s} of ${cinstance?.label ?? ''}`,
-              color: getColorNumberByText(s),
-              targetClass: recruit.mixin.Candidate,
-              category
-            })
-          )
-          namedElements.set(title, e)
-          elements.set(e._id, e)
-          newElements.push(e)
-        }
-        if (e !== undefined) {
-          newSurveys.push(
-            TxProcessor.createDoc2Doc(
-              client.txFactory.createTxCreateDoc(tags.class.TagReference, tags.space.Tags, {
-                title: e.title,
-                color: e.color,
-                tag: e._id,
-                attachedTo: '' as Ref<Doc>,
-                attachedToClass: recruit.mixin.Candidate,
-                collection: 'surveys'
-              })
-            )
-          )
-        }
-      }
+     
       object.skills = [...object.skills, ...newSkills]
-      object.surveys = [...object?.surveys, ...newSurveys]
 
     } catch (err: any) {
       Analytics.handleError(err)

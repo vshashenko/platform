@@ -27,8 +27,13 @@ export interface SurveyElement extends Doc {
   color: number
   formItems: FormItem[]
 }
+
+/**
+ * @public
+ */
 export interface SurveyReference extends AttachedDoc {
   title: string
+  formItem: FormItem[]
   color: number
 }
 

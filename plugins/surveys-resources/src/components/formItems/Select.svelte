@@ -1,7 +1,7 @@
 <script lang="ts">
   import { Button, IconAdd } from '@hcengineering/ui'
   export let question: string
-  export let options: string[]
+  export let options: string[] 
   import { createEventDispatcher } from 'svelte'
 
   const dispatch = createEventDispatcher()

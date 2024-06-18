@@ -1,28 +1,28 @@
 <script lang="ts">
-  export let question: string
-  export let defaultValue: string[]
-  import { createEventDispatcher } from 'svelte'
+  export let question: string;
+  export let defaultValue: string | undefined;
+  import { createEventDispatcher } from 'svelte';
 
-  const dispatch = createEventDispatcher()
-  let updatedQuestion = question
-  let updatedDefaultValue = defaultValue
-  let editingQuestion = false
+  const dispatch = createEventDispatcher();
+  let updatedQuestion = question;
+  let updatedDefaultValue = defaultValue;
+  let editingQuestion = false;
 
   function handleInputChange() {
-    dispatch('changeQuestion', updatedQuestion)
+    dispatch('changeQuestion', updatedQuestion);
   }
 
   function handleDefaultValueChange(event: any) {
-    updatedDefaultValue = event.target.value
-    dispatch('changeDefaultValue', updatedDefaultValue)
+    updatedDefaultValue = event.target.value;
+    dispatch('changeDefaultValue', updatedDefaultValue);
   }
 
   function toggleEditing() {
-    editingQuestion = !editingQuestion
+    editingQuestion = !editingQuestion;
   }
 
   function handleBlur() {
-    editingQuestion = false
+    editingQuestion = false;
   }
 </script>
 
@@ -49,10 +49,10 @@
     <textarea
       id="default-value-textarea"
       class="form-control"
+      bind:value={updatedDefaultValue}
       placeholder="Long Text"
       on:input={handleDefaultValueChange}
-    >
-    </textarea>
+    />
   </div>
 </div>
 

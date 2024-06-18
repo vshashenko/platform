@@ -1,21 +1,7 @@
-<!--
-// Copyright © 2022 Hardcore Engineering Inc.
-//
-// Licensed under the Eclipse Public License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License. You may
-// obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//
-// See the License for the specific language governing permissions and
-// limitations under the License.
--->
 <script lang="ts">
-  import core, { Data, DocumentUpdate } from '@hcengineering/core'
-  import { Card, createQuery, getClient } from '@hcengineering/presentation'
-  import { FormItem, SurveyElement } from '@hcengineering/surveys'
+  import core, { Data, DocumentUpdate } from '@hcengineering/core';
+  import { Card, createQuery, getClient } from '@hcengineering/presentation';
+  import { FormItem, SurveyElement } from '@hcengineering/surveys';
   import {
     DropdownLabels,
     EditBox,
@@ -24,75 +10,78 @@
     getPlatformColorDef,
     showPopup,
     themeStore
-  } from '@hcengineering/ui'
-  import { DropdownTextItem } from '@hcengineering/ui/src/types'
-  import { ColorsPopup } from '@hcengineering/view-resources'
-  import { createEventDispatcher } from 'svelte'
-  import surveys from '../plugin'
-  import { getSurveyStyle } from '../utils'
-  import LongText from './formItems/LongText.svelte'
-  import ShortText from './formItems/ShortText.svelte'
-  import Select from './formItems/Select.svelte'
-  import Checkbox from './formItems/Checkbox.svelte'
+  } from '@hcengineering/ui';
+  import { DropdownTextItem } from '@hcengineering/ui/src/types';
+  import { ColorsPopup } from '@hcengineering/view-resources';
+  import { createEventDispatcher } from 'svelte';
+  import surveys from '../plugin';
+  import { getSurveyStyle } from '../utils';
+  import LongText from './formItems/LongText.svelte';
+  import ShortText from './formItems/ShortText.svelte';
+  import Select from './formItems/Select.svelte';
+  import Checkbox from './formItems/Checkbox.svelte';
 
-  export let value: SurveyElement
-  export let keyTitle: string = ''
+  export let value: SurveyElement;
+  export let keyTitle: string = '';
 
-  const dispatch = createEventDispatcher()
-  const client = getClient()
+  const dispatch = createEventDispatcher();
+  const client = getClient();
 
-  let formItems: FormItem[] = []
 
   const data: Omit<Data<SurveyElement>, 'targetClass'> = {
     title: value.title,
     color: value.color,
     formItems: value.formItems
-  }
+  };
 
   async function updateElement() {
-    const documentUpdate: DocumentUpdate<SurveyElement> = {}
-    const refUpdate: DocumentUpdate<any> = {}
+    const documentUpdate: DocumentUpdate<SurveyElement> = {
+      title: data.title,
+      color: data.color,
+      formItems: data.formItems
+    };
+    const refUpdate: DocumentUpdate<any> = {
+      title: data.title,
+      color: data.color
+    };
 
-    if (data.title !== value.title) {
-      documentUpdate.title = data.title
-      refUpdate.title = data.title
+    console.log(documentUpdate);
+    
+    await client.update(value, documentUpdate);
+    console.log(value);
+        
+    const references = await client.findAll(surveys.class.SurveyReference, { survey: value._id });
+
+    for (const r of references) {
+      const u = client.txFactory.createTxUpdateDoc(r._class, r.space, r._id, refUpdate);
+      u.space = core.space.DerivedTx;
+      await client.tx(u);
     }
 
-    if (data.formItems !== value.formItems) {
-      documentUpdate.formItems = data.formItems
-    }
-
-    if (data.color !== value.color) {
-      documentUpdate.color = data.color
-      refUpdate.color = data.color
-    }
-
-    if (Object.keys(documentUpdate).length > 0) {
-      await client.update(value, documentUpdate)
-
-      // if (Object.keys(refUpdate).length > 0) {
-      //   const references = await client.findAll(surveys.class.SurveyReference, { survey: value._id })
-      //   for (const r of references) {
-      //     const u = client.txFactory.createTxUpdateDoc(r._class, r.space, r._id, refUpdate)
-      //     u.space = core.space.DerivedTx
-      //     await client.tx(u)
-      //   }
-      // }
-    }
-
-    dispatch('close')
+    dispatch('close');
   }
 
-  const query = createQuery()
-  // query.query(surveys.class.SurveyCategory, { targetClass: value.targetClass }, async (result) => {
-  //   const newItems: FormItem[] = []
-  //   for (const r of result) {
-  //     // newItems.push()
-  //   }
-  //   formItems = newItems
-  // })
+  function addFormElement(type: any) {
+    const id = Date.now()
+    const newElement: FormItem = {
+      id,
+      type,
+      question: '',
+      defaultValue: '',
+      options: []
+    };
+    data.formItems = [...data.formItems, newElement];
+    console.log(data);
+  }
 
-  console.log(value)
+  function updateFormElement(id: string, property: string, val: any) {
+    const element = data.formItems.find(item => item.id === id);
+    if (element) {
+      element[property] = val;
+      data.formItems = [...data.formItems];  // Ensure reactivity
+    }
+  }
+  console.log(value);
 </script>
 
 <Card
@@ -111,70 +100,106 @@
       <div class="fs-title flex-row-center">
         <!-- svelte-ignore a11y-click-events-have-key-events -->
         <!-- svelte-ignore a11y-no-static-element-interactions -->
-        <div
-          class="color"
-          style={getSurveyStyle(getPlatformColorDef(data.color, $themeStore.dark))}
-          on:click={(evt) => {
-            showPopup(
-              ColorsPopup,
-              { selected: getPlatformColorDef(data.color, $themeStore.dark).name },
-              eventToHTMLElement(evt),
-              (col) => {
-                if (col != null) {
-                  data.color = col
+        <div class="mr-3">
+          <div
+            class="color"
+            style={getSurveyStyle(getPlatformColorDef(data.color, $themeStore.dark))}
+            on:click={(evt) => {
+              showPopup(
+                ColorsPopup,
+                { selected: getPlatformColorDef(data.color, $themeStore.dark).name },
+                eventToHTMLElement(evt),
+                (col) => {
+                  if (col != null) {
+                    data.color = col
+                  }
                 }
-              }
-            )
-          }}
-        />
-        {#each value.formItems as element (element.id)}
-          {#if element.type === 'long-text'}
-            <LongText question={element.question} />
-          {/if}
-          {#if element.type === 'short-text'}
-            <ShortText question={element.question} />
-          {/if}
-          {#if element.type === 'select'}
-            <Select question={element.question} options={element.options} />
-          {/if}
-          {#if element.type === 'checkbox'}
-            <Checkbox question={element.question} options={element.options} />
-          {/if}
-        {/each}
+              )
+            }}
+          />
+        </div>
         <EditBox
           placeholder={surveys.string.SurveyName}
           placeholderParam={{ word: keyTitle }}
           bind:value={data.title}
         />
       </div>
-      <div class="ml-12">
-        <DropdownLabels
-          icon={IconFolder}
-          label={surveys.string.SurveyCreateLabel}
-          kind={'regular'}
-          size={'large'}
-          items={[
-            { label: 'Long Text', id: 'long-text' },
-            { label: 'Short Text', id: 'short-text' },
-            { label: 'Select', id: 'select' },
-            { label: 'Checkbox', id: 'checkbox' }
-          ]}
-          on:selected={(event) => {
-            const selectedValue = event.detail
-            // addFormElement(selectedValue)
-          }}
-        />
-      </div>
     </div>
   </div>
+
+  <div class="formElements">
+    {#each data.formItems as element (element.id)}
+      {#if element.type === 'long-text'}
+        <LongText 
+          question={element.question} 
+          defaultValue={element.defaultValue}
+          on:changeDefaultValue={(event) => updateFormElement(element.id, 'defaultValue', event.detail)}
+          on:changeQuestion={(event) => updateFormElement(element.id, 'question', event.detail)}
+        />
+      {/if}
+      <!-- {#if element.type === 'short-text'}
+        <ShortText question={element.question} defaultValue={element.defaultValue}/>
+      {/if}
+      {#if element.type === 'select'}
+        <Select question={element.question} options={element.options} defaultValue={element.defaultValue}/>
+      {/if}
+      {#if element.type === 'checkbox'}
+        <Checkbox question={element.question} options={element.options} defaultValue={element.defaultValue}/>
+      {/if} -->
+    {/each}
+  </div>
+  <svelte:fragment slot="pool">
+    <div class="ml-12">
+      <DropdownLabels
+        icon={IconFolder}
+        label={surveys.string.SurveyCreateLabel}
+        kind={'regular'}
+        size={'large'}
+        items={[
+          { label: 'Long Text', id: 'long-text' },
+          { label: 'Short Text', id: 'short-text' },
+          { label: 'Select', id: 'select' },
+          { label: 'Checkbox', id: 'checkbox' }
+        ]}
+        on:selected={(event) => {
+          const selectedValue = event.detail;
+          addFormElement(selectedValue);
+        }}
+      />
+    </div>
+  </svelte:fragment>
 </Card>
 
 <style lang="scss">
   .color {
-    margin-right: 0.75rem;
     width: 1rem;
     height: 1rem;
     border-radius: 0.25rem;
+  }
+  .form-elements {
+    margin-top: 1rem;
+  }
+  .form-element {
+    margin-bottom: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .form-content {
+    flex-grow: 1;
+  }
+  .remove-button {
+    background: none;
+    border: none;
+    color: black;
+    font-weight: bold;
+    font-size: 1.5rem;
     cursor: pointer;
+    padding: 0;
+    margin-left: 27px;
+    margin-bottom: 110px;
+    display: flex;
+    align-items: start;
+    justify-content: start;
   }
 </style>

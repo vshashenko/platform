@@ -73,8 +73,11 @@
   function addFormElement(type: FormElementType): void {
     const newElement: FormElement = { id: Date.now(), type, question: '', options: type === 'select' || type === 'checkbox' ? [''] : undefined, defaultValue: ''}
     formElements = [...formElements, newElement]
-  console.log('formElements', formElements);
+  }
 
+  // Remove form element
+  function removeFormElement(id: number): void {
+    formElements = formElements.filter(element => element.id !== id)
   }
 
   // Update form element
@@ -83,7 +86,6 @@
   }
 
   // Update form element default value
-
   function updateDefaultValue(id: number, newDefaultValue: string): void {
     formElements = formElements.map(element => element.id === id ? { ...element, defaultValue: newDefaultValue } : element)
   }
@@ -146,32 +148,41 @@
 
   <div class="form-elements">
     {#each formElements as element (element.id)}
-      {#if element.type === 'long-text'}
-        <LongText question={element.question}  
-        on:changeQuestion={(event) => updateQuestion(element.id, event.detail)} 
-        on:changeDefaultValue={(event) => updateDefaultValue(element.id, event.detail)}
-        />
-      {/if}
-      {#if element.type === 'short-text'}
-        <ShortText question={element.question} 
-        on:changeQuestion={(event) => updateQuestion(element.id, event.detail)} 
-        on:changeDefaultValue={(event) => updateDefaultValue(element.id, event.detail)}
-        />
-      {/if}
-      {#if element.type === 'select'}
-        <Select 
-        question={element.question} 
-        options={element.options} 
-        on:changeDefaultValue={(event) => updateDefaultValue(element.id, event.detail)}
-        on:changeQuestion={(event) => updateQuestion(element.id, event.detail)} on:changeOptions={(event) => updateOptions(element.id, event.detail)} />
-      {/if}
-      {#if element.type === 'checkbox'}
-        <Checkbox 
-        question={element.question} 
-        options={element.options} 
-        on:changeDefaultValue={(event) => updateDefaultValue(element.id, event.detail)}
-        on:changeQuestion={(event) => updateQuestion(element.id, event.detail)} on:changeOptions={(event) => updateOptions(element.id, event.detail)} />
-      {/if}
+      <div class="form-element">
+        <div class="form-content">
+          {#if element.type === 'long-text'}
+            <LongText question={element.question}  
+            on:changeQuestion={(event) => updateQuestion(element.id, event.detail)} 
+            on:changeDefaultValue={(event) => updateDefaultValue(element.id, event.detail)}
+            />
+          {/if}
+          {#if element.type === 'short-text'}
+            <ShortText question={element.question} 
+            on:changeQuestion={(event) => updateQuestion(element.id, event.detail)} 
+            on:changeDefaultValue={(event) => updateDefaultValue(element.id, event.detail)}
+            />
+          {/if}
+          {#if element.type === 'select'}
+            <Select 
+            question={element.question} 
+            options={element.options} 
+            on:changeDefaultValue={(event) => updateDefaultValue(element.id, event.detail)}
+            on:changeQuestion={(event) => updateQuestion(element.id, event.detail)} 
+            on:changeOptions={(event) => updateOptions(element.id, event.detail)} 
+            />
+          {/if}
+          {#if element.type === 'checkbox'}
+            <Checkbox 
+            question={element.question} 
+            options={element.options} 
+            on:changeDefaultValue={(event) => updateDefaultValue(element.id, event.detail)}
+            on:changeQuestion={(event) => updateQuestion(element.id, event.detail)} 
+            on:changeOptions={(event) => updateOptions(element.id, event.detail)} 
+            />
+          {/if}
+        </div>
+        <button class="remove-button" on:click={() => removeFormElement(element.id)}>X</button>
+      </div>
     {/each}
   </div>
 </Card>
@@ -187,5 +198,25 @@
   }
   .form-element {
     margin-bottom: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .form-content {
+    flex-grow: 1;
+  }
+  .remove-button {
+    background: none;
+    border: none;
+    color: black;
+    font-weight: bold;
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 0;
+    margin-left: 27px;
+    margin-bottom: 110px;
+    display: flex;
+    align-items: start;
+    justify-content: start;
   }
 </style>

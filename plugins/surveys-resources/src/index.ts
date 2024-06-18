@@ -23,9 +23,21 @@ import SurveysView from './components/SurveysView.svelte'
 import SurveysEditorPopup from './components/SurveysEditorPopup.svelte'
 import CreateSurveyElement from './components/CreateSurveyElement.svelte'
 import SurveyElement from './components/SurveyElement.svelte'
-import { selectedSurveyElements } from './utils'
+import { getRefs, selectedSurveyElements } from './utils'
+import type { Filter } from '@hcengineering/view'
+import type { ObjQueryType } from '@hcengineering/core'
 
 export { SurveyElement, selectedSurveyElements }
+
+export async function tagsInResult (filter: Filter, onUpdate: () => void): Promise<ObjQueryType<any>> {
+  const result = await getRefs(filter, onUpdate)
+  return { $in: result }
+}
+
+export async function tagsNinResult (filter: Filter, onUpdate: () => void): Promise<ObjQueryType<any>> {
+  const result = await getRefs(filter, onUpdate)
+  return { $nin: result }
+}
 
 export async function createSurveyElement (props: Record<string, any> = {}): Promise<void> {
   showPopup(CreateSurveyElement, props, 'top')
@@ -47,6 +59,8 @@ export default async (): Promise<Resources> => ({
     }
   },
   function: {
-    CreateSurveyElement: createSurveyElement
+    CreateSurveyElement: createSurveyElement,
+    FilterTagsInResult: tagsInResult,
+    FilterTagsNinResult: tagsNinResult
   }
 })

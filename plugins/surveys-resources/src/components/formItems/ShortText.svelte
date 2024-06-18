@@ -1,6 +1,6 @@
 <script lang="ts">
   export let question: string
-  export let defaultValue: string[]
+  export let defaultValue: string | undefined
   import { createEventDispatcher } from 'svelte'
 
   const dispatch = createEventDispatcher()

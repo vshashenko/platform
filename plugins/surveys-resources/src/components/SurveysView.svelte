@@ -13,13 +13,12 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Class, Doc, FindOptions, Ref } from '@hcengineering/core'
+  import { Class, Doc, DocumentQuery, FindOptions, Ref } from '@hcengineering/core'
   import { IntlString, translate } from '@hcengineering/platform'
-  import { Button, Label, showPopup, IconAdd, themeStore } from '@hcengineering/ui'
+  import { Button, Label, showPopup, IconAdd, themeStore, SearchEdit } from '@hcengineering/ui'
   import surveys from '../plugin'
   import CreateSurveyElement from './CreateSurveyElement.svelte'
   import { TableBrowser } from '@hcengineering/view-resources'
-  import SurveyElementPresenter from './SurveyElementPresenter.svelte'
   export let title: IntlString = surveys.string.Surveys
   export let item: IntlString = surveys.string.Survey
   export let сreateItemLabel: IntlString = surveys.string.SurveyCreateLabel
@@ -29,6 +28,17 @@
   $: translate(item, {}, $themeStore.language).then((t) => {
     keyTitle = t.toLowerCase()
   })
+  let resultQuery: DocumentQuery<any> = { targetClass }
+    let search = ''
+
+  function updateResultQuery (search: string, title?: IntlString): void {
+    console.log(search, title);
+    
+    resultQuery = search === '' ? { targetClass } : { $search: search, targetClass }
+    if (title !== undefined) {
+      resultQuery.title = title
+    }    
+  }
 
   function showCreateDialog() {
     showPopup(CreateSurveyElement, { targetClass, keyTitle }, 'top')
@@ -45,6 +55,17 @@
   <div class="ac-header-full medium-gap mb-1">
     <slot />
     <Button icon={IconAdd} label={сreateItemLabel} kind={'primary'} on:click={showCreateDialog} />
+  </div>
+</div>
+<div class="ac-header full divide search-start">
+  <div class="ac-header-full small-gap">
+    <SearchEdit
+      bind:value={search}
+      on:change={() => {
+        updateResultQuery(search, title)
+      }}
+    />
+    <!-- <ActionIcon icon={IconMoreH} size={'small'} /> -->
   </div>
 </div>
 <TableBrowser

@@ -24,6 +24,10 @@ export default mergeIds(surveysId, surveys, {
   component: {
     Surveys: '' as AnyComponent,
     SurveyElementPresenter: '' as AnyComponent,
+    SurveysItemPresenter: '' as AnyComponent,
+    SurveyReferencePresenter: '' as AnyComponent,
+    SurveysFilter: '' as AnyComponent,
+    SurveysFilterPresenter: '' as AnyComponent
   },
   string: {
     SurveyElementLabel: '' as IntlString,
@@ -31,6 +35,8 @@ export default mergeIds(surveysId, surveys, {
     DescriptionLabel: '' as IntlString,
     ColorLabel: '' as IntlString,
     WeightLabel: '' as IntlString,
+    SurveyReferenceLabel: '' as IntlString,
+    SurveyReference: '' as IntlString,
     TargetClassLabel: '' as IntlString,
     TargetCategoryLabel: '' as IntlString,
     AssetLabel: '' as IntlString,

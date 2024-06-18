@@ -50,30 +50,30 @@ export async function SurveyElementRemove (
  * @public
  */
 export async function onSurveyReference (tx: Tx, control: TriggerControl): Promise<Tx[]> {
-  const actualTx = TxProcessor.extractTx(tx)
-  const isCreate = control.hierarchy.isDerived(actualTx._class, core.class.TxCreateDoc)
-  const isRemove = control.hierarchy.isDerived(actualTx._class, core.class.TxRemoveDoc)
-  if (!isCreate && !isRemove) return []
-  if (!control.hierarchy.isDerived((actualTx as TxCUD<Doc>).objectClass, surveys.class.SurveyReference)) return []
-  if (isCreate) {
-    const doc = TxProcessor.createDoc2Doc(actualTx as TxCreateDoc<SurveyReference>)
-    const res = control.txFactory.createTxUpdateDoc(surveys.class.SurveyElement, surveys.space.Surveys, doc.survey, {
-      $inc: { refCount: 1 }
-    })
-    return [res]
-  }
-  if (isRemove) {
-    const ctx = actualTx as TxRemoveDoc<SurveyReference>
-    const doc = control.removedMap.get(ctx.objectId) as SurveyReference
-    if (doc !== undefined) {
-      if (!control.removedMap.has(doc.survey)) {
-        const res = control.txFactory.createTxUpdateDoc(surveys.class.SurveyElement, surveys.space.Surveys, doc.survey, {
-          $inc: { refCount: -1 }
-        })
-        return [res]
-      }
-    }
-  }
+  // const actualTx = TxProcessor.extractTx(tx)
+  // const isCreate = control.hierarchy.isDerived(actualTx._class, core.class.TxCreateDoc)
+  // const isRemove = control.hierarchy.isDerived(actualTx._class, core.class.TxRemoveDoc)
+  // if (!isCreate && !isRemove) return []
+  // if (!control.hierarchy.isDerived((actualTx as TxCUD<Doc>).objectClass, surveys.class.SurveyReference)) return []
+  // if (isCreate) {
+  //   const doc = TxProcessor.createDoc2Doc(actualTx as TxCreateDoc<SurveyReference>)
+  //   const res = control.txFactory.createTxUpdateDoc(surveys.class.SurveyElement, surveys.space.Surveys, doc.survey, {
+  //     $inc: { refCount: 1 }
+  //   })
+  //   return [res]
+  // }
+  // if (isRemove) {
+  //   const ctx = actualTx as TxRemoveDoc<SurveyReference>
+  //   const doc = control.removedMap.get(ctx.objectId) as SurveyReference
+  //   if (doc !== undefined) {
+  //     if (!control.removedMap.has(doc.survey)) {
+  //       const res = control.txFactory.createTxUpdateDoc(surveys.class.SurveyElement, surveys.space.Surveys, doc.survey, {
+  //         $inc: { refCount: -1 }
+  //       })
+  //       return [res]
+  //     }
+  //   }
+  // }
   return []
 }
 

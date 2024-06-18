@@ -21,7 +21,7 @@ import surveys from '@hcengineering/surveys'
 
 export { serverSurveysId } from '@hcengineering/server-surveys'
 
-export function createModel(builder: Builder): void {
+export function createModel (builder: Builder): void {
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
     trigger: serverSurveys.trigger.onSurveyReference
   })

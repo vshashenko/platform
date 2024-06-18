@@ -47,6 +47,7 @@ import chunter from '@hcengineering/model-chunter'
 import contact, { TOrganization, TPerson } from '@hcengineering/model-contact'
 import core, { TAttachedDoc } from '@hcengineering/model-core'
 import tags from '@hcengineering/model-tags'
+import surveys from '@hcengineering/model-surveys'
 import task, { DOMAIN_TASK, TProject, TTask } from '@hcengineering/model-task'
 import { getEmbeddedLabel } from '@hcengineering/platform'
 import type {
@@ -117,7 +118,7 @@ export class TCandidate extends TPerson implements Candidate {
   })
     skills?: number
 
-  @Prop(Collection(tags.class.TagReference, recruit.string.SurveyLabel), recruit.string.SurveysLabel, {
+  @Prop(Collection(surveys.class.SurveyReference, recruit.string.SurveyLabel), recruit.string.SurveysLabel, {
     icon: recruit.icon.Surveys,
     schema: '4'
   })
