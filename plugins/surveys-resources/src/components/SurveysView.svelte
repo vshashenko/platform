@@ -43,7 +43,6 @@
   function showCreateDialog() {
     showPopup(CreateSurveyElement, { targetClass, keyTitle }, 'top')
   }
-  console.log(surveys.class);
   
 </script>
 
@@ -65,7 +64,6 @@
         updateResultQuery(search, title)
       }}
     />
-    <!-- <ActionIcon icon={IconMoreH} size={'small'} /> -->
   </div>
 </div>
 <TableBrowser
@@ -77,8 +75,9 @@
       presenter: surveys.component.SurveyElementPresenter,
       props: { edit: true, keyTitle },
       sortingKey: 'title'
-    }
+    },
+    'modifiedOn'
   ]}
-  query={[]}
+  query={{}}
   showNotification
 />

@@ -339,9 +339,8 @@ export function createModel (builder: Builder): void {
         'attachments',
         'comments',
         {
-          // key: '$lookup.surveys', // Required, since presenter require list of tag references or '' and TagsPopupPresenter
           key: '',
-          presenter: tags.component.TagsPresenter,
+          presenter: surveys.component.SurveysPresenter,
           label: recruit.string.SurveysLabel,
           sortingKey: 'surveys',
           props: {

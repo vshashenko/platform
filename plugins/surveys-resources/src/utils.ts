@@ -47,7 +47,7 @@ export const selectedSurveyElements = writable<Array<Ref<SurveyElement>>>([])
 export async function createSurvey (
   title: string,
   color?: number | null,
-  formItems?: FormItem | null
+  formItems?: FormItem[] | null
 ): Promise<Ref<SurveyElement>> {
   const surveyElement: Data<any> = {
     title,

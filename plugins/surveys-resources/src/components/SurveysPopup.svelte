@@ -40,7 +40,6 @@
   export let selected: Ref<SurveyElement>[] = []
   export let keyLabel: string = ''
   export let hideAdd: boolean = false
-
   const surveyShowLimit = 50
 
   let search: string = ''
@@ -68,7 +67,8 @@
   async function createSurveyElementPopup(): Promise<void> {
     showPopup(CreateSurveyElement, { targetClass, title: search }, 'top', onCreateSurveyElement)
   }
-
+  console.log(targetClass);
+  
 </script>
 
 <div class="selectPopup maxHeight" use:resizeObserver={() => dispatch('changeContent')}>

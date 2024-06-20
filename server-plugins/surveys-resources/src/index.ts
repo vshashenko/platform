@@ -42,8 +42,9 @@ export async function SurveyElementRemove (
     options?: FindOptions<T>
   ) => Promise<FindResult<T>>
 ): Promise<Doc[]> {
-  if (!hierarchy.isDerived(doc._class, surveys.class.SurveyElement)) return []
-  return await findAll(surveys.class.SurveyReference, { survey: doc._id as Ref<SurveyElement> })
+  // if (!hierarchy.isDerived(doc._class, surveys.class.SurveyElement)) return []
+  // return await findAll(surveys.class.SurveyReference, { survey: doc._id as Ref<SurveyElement> })
+  return []
 }
 
 /**

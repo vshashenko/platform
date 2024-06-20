@@ -17,11 +17,13 @@ import { type Builder, Index, Prop, TypeString, TypeAny, Model, UX, TypeRef } fr
 import core, { TAttachedDoc, TDoc } from '@hcengineering/model-core'
 import view from '@hcengineering/model-view'
 import type {
+  FormElementType,
   FormItem,
   SurveyElement,
   SurveyReference
 } from '@hcengineering/surveys'
 import surveys from './plugin'
+import { IntlString } from '@hcengineering/platform'
 
 export { type SurveyElement, type SurveyReference, surveysId } from '@hcengineering/surveys'
 export { surveysOperation } from './migration'
@@ -62,16 +64,30 @@ export class TSurveyReference extends TAttachedDoc implements SurveyReference {
     color!: number
 }
 
+@Model(surveys.class.FormELement, core.class.Doc, DOMAIN_SURVEYS)
+@UX(surveys.string.TargetFormItemsLabel)
+export class TFormELement extends TDoc implements FormItem {
+  @Prop(TypeString(), surveys.string.IdLabel)
+    id!: number
+
+  @Prop(TypeString(), surveys.string.TypeLabel)
+    type!: FormElementType
+
+  @Prop(TypeString(), surveys.string.QuestionLabel)
+    question!: string
+
+  @Prop(TypeString(), surveys.string.OptionsLabel)
+    options?: string[]
+
+  @Prop(TypeString(), surveys.string.DefaultLabel)
+    defaultValue?: string
+}
+
 export function createModel (builder: Builder): void {
-  builder.createModel(TSurveyElement, TSurveyReference)
+  builder.createModel(TSurveyElement, TSurveyReference, TFormELement)
 
   builder.mixin(surveys.class.SurveyElement, core.class.Class, view.mixin.ObjectFactory, {
     create: surveys.function.CreateSurveyElement
-  })
-
-  builder.mixin(surveys.class.SurveyReference, core.class.Class, view.mixin.CollectionEditor, {
-    editor: surveys.component.Surveys,
-    inlineEditor: surveys.component.SurveysAttributeEditor
   })
 
   builder.mixin(surveys.class.SurveyReference, core.class.Class, view.mixin.ObjectPresenter, {

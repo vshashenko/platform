@@ -6,7 +6,6 @@
   import { Chip, getEventPopupPositionElement, resizeObserver, showPopup, tooltip } from '@hcengineering/ui'
   import { afterUpdate, createEventDispatcher } from 'svelte'
   import SurveyReferencePresenter from './SurveyReferencePresenter.svelte'
-  import SurveysReferencePresenter from './SurveysReferencePresenter.svelte'
   import SurveysEditorPopup from './SurveysEditorPopup.svelte'
   import SurveysItemPresenter from './SurveysItemPresenter.svelte'
   import LabelsPresenter from './LabelsPresenter.svelte'
@@ -67,7 +66,7 @@
         props: { value: items, kind: 'link' }
       }}
     >
-      <SurveysReferencePresenter {items} {kind} />
+      <!-- <SurveyReferencePresenter {value} {kind} /> -->
     </div>
   {:else}
     {#each items as value}

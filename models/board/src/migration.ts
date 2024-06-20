@@ -66,6 +66,7 @@ async function createDefaults (tx: TxOperations): Promise<void> {
     },
     board.category.Other
   )
+  console.log('Created default board')
 }
 
 async function migrateIdentifiers (client: MigrationClient): Promise<void> {

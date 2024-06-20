@@ -104,7 +104,7 @@ export async function applicantValidator(applicant: Applicant, client: Client): 
   return OK
 }
 
-export async function queryApplication(
+export async function queryApplication (
   client: Client,
   search: string,
   filter?: { in?: RelatedDocument[], nin?: RelatedDocument[] }
@@ -163,7 +163,7 @@ export async function queryApplication(
     component: ApplicationItem
   }))
 }
-export async function queryVacancy(
+export async function queryVacancy (
   client: Client,
   search: string,
   filter?: { in?: RelatedDocument[], nin?: RelatedDocument[] }
@@ -206,7 +206,7 @@ export async function queryVacancy(
   }))
 }
 
-async function getActiveTalants(filter: Filter, onUpdate: () => void): Promise<Array<Ref<Doc>>> {
+async function getActiveTalants (filter: Filter, onUpdate: () => void): Promise<Array<Ref<Doc>>> {
   const doneStates = get(statusStore)
     .array.filter((p) => p.category === task.statusCategory.Lost || p.category === task.statusCategory.Won)
     .map((p) => p._id)
@@ -240,7 +240,7 @@ async function getActiveTalants(filter: Filter, onUpdate: () => void): Promise<A
   return await promise
 }
 
-async function getNoApplicantCandidates(filter: Filter, onUpdate: () => void): Promise<Array<Ref<Doc>>> {
+async function getNoApplicantCandidates (filter: Filter, onUpdate: () => void): Promise<Array<Ref<Doc>>> {
   const promise = new Promise<Array<Ref<Doc>>>((resolve, reject) => {
     let refresh: boolean = false
     const lq = FilterQuery.getLiveQuery(filter.index)
@@ -271,20 +271,20 @@ async function getNoApplicantCandidates(filter: Filter, onUpdate: () => void): P
   return await promise
 }
 
-async function hasActiveApplicant(filter: Filter, onUpdate: () => void): Promise<ObjQueryType<any>> {
+async function hasActiveApplicant (filter: Filter, onUpdate: () => void): Promise<ObjQueryType<any>> {
   const result = await getActiveTalants(filter, onUpdate)
   return { $in: result }
 }
-async function hasNoActiveApplicant(filter: Filter, onUpdate: () => void): Promise<ObjQueryType<any>> {
+async function hasNoActiveApplicant (filter: Filter, onUpdate: () => void): Promise<ObjQueryType<any>> {
   const result = await getActiveTalants(filter, onUpdate)
   return { $nin: result }
 }
-async function noneApplicant(filter: Filter, onUpdate: () => void): Promise<ObjQueryType<any>> {
+async function noneApplicant (filter: Filter, onUpdate: () => void): Promise<ObjQueryType<any>> {
   const result = await getNoApplicantCandidates(filter, onUpdate)
   return { $in: result }
 }
 
-export function hideDoneState(value: any, query: DocumentQuery<Doc>): DocumentQuery<Doc> {
+export function hideDoneState (value: any, query: DocumentQuery<Doc>): DocumentQuery<Doc> {
   if (value as boolean) {
     return { ...query, isDone: { $ne: true } }
   }
@@ -295,7 +295,7 @@ const activeVacancyQuery = createQuery(true)
 
 let activeVacancies: Promise<Array<Ref<Vacancy>>> | Array<Ref<Vacancy>> | undefined
 
-export async function hideArchivedVacancies(value: any, query: DocumentQuery<Doc>): Promise<DocumentQuery<Doc>> {
+export async function hideArchivedVacancies (value: any, query: DocumentQuery<Doc>): Promise<DocumentQuery<Doc>> {
   if (activeVacancies === undefined) {
     activeVacancies = new Promise<Array<Ref<Vacancy>>>((resolve) => {
       activeVacancyQuery.query(
@@ -318,7 +318,7 @@ export async function hideArchivedVacancies(value: any, query: DocumentQuery<Doc
   return query
 }
 
-export async function applicantHasEmail(doc: Doc | Doc[] | undefined): Promise<boolean> {
+export async function applicantHasEmail (doc: Doc | Doc[] | undefined): Promise<boolean> {
   if (doc === undefined) return false
   const client = getClient()
   const applicants = Array.isArray(doc) ? (doc as Applicant[]) : ([doc] as Applicant[])

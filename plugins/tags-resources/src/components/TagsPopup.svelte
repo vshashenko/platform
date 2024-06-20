@@ -57,7 +57,7 @@
 
   const dispatch = createEventDispatcher()
   const query = createQuery()
-
+    
   const client = getClient()
   void client.findAll(tags.class.TagCategory, { targetClass }).then((res) => {
     categories = res

@@ -35,7 +35,6 @@
   import { FILTER_DEBOUNCE_MS, FilterQuery, sortFilterValues } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
   import surveys from '../plugin'
-  import WeightPopup from './WeightPopup.svelte'
 
   export let _class: Ref<Class<Doc>>
   export let filter: Filter
@@ -69,6 +68,8 @@
           }
         : { targetClass: _class }
     objectsPromise = client.findAll(surveys.class.SurveyElement, resultQuery)
+    console.log('objectsPromise', objectsPromise);
+    
     const _objects = sortFilterValues(await objectsPromise, isSelected)
     if (qid !== queryId) {
       return
@@ -137,25 +138,6 @@
       placeholder={presentation.string.Search}
       on:input={() => getValues(search)}
     />
-    {#if schema !== '0'}
-      <div class="flex-between w-full mt-2">
-        <span class="overflow-label pl-2 mr-2"><Label label={surveys.string.Weight} /></span>
-        <Button
-          label={surveyLevelLabel}
-          icon={surveyLevelIcon}
-          on:click={(evt) => {
-            showPopup(WeightPopup, { value: level, schema }, getEventPopupPositionElement(evt), (res) => {
-              if (Number.isFinite(res) && res >= 0 && res <= 8) {
-                if (res != null) {
-                  level = res
-                  updateFilter(selected, level)
-                }
-              }
-            })
-          }}
-        />
-      </div>
-    {/if}
   </div>
   <div class="scroll">
     <div class="box">

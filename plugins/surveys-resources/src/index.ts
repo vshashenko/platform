@@ -16,12 +16,21 @@ import { type SurveyElement as SurveyElementType } from '@hcengineering/surveys'
 import { eventToHTMLElement, showPopup } from '@hcengineering/ui'
 import EditSurveyElement from './components/EditSurveyElement.svelte'
 import SurveyElementPresenter from './components/SurveyElementPresenter.svelte'
-import Surveys from './components/Surveys.svelte'
 import SurveysDropdownEditor from './components/SurveysDropdownEditor.svelte'
 import SurveysEditor from './components/SurveysEditor.svelte'
 import SurveysView from './components/SurveysView.svelte'
 import SurveysEditorPopup from './components/SurveysEditorPopup.svelte'
 import CreateSurveyElement from './components/CreateSurveyElement.svelte'
+import SurveysItemPresenter from './components/SurveysItemPresenter.svelte'
+import SurveysFilter from './components/SurveysFilter.svelte'
+import SurveysPresenter from './components/SurveysPresenter.svelte'
+import SurveyReferencePresenter from './components/SurveyReferencePresenter.svelte'
+import SurveyElementCountPresenter from './components/SurveyElementCountPresenter.svelte'
+import SurveysAttributeEditor from './components/SurveysAttributeEditor.svelte'
+import LabelsPresenter from './components/LabelsPresenter.svelte'
+import ObjectsSurveysEditorPopup from './components/ObjectsSurveysEditorPopup.svelte'
+import SurveysFilterPresenter from './components/SurveysFilterPresenter.svelte'
+import DocSurveysEditor from './components/DocSurveysEditor.svelte'
 import SurveyElement from './components/SurveyElement.svelte'
 import { getRefs, selectedSurveyElements } from './utils'
 import type { Filter } from '@hcengineering/view'
@@ -29,12 +38,12 @@ import type { ObjQueryType } from '@hcengineering/core'
 
 export { SurveyElement, selectedSurveyElements }
 
-export async function tagsInResult (filter: Filter, onUpdate: () => void): Promise<ObjQueryType<any>> {
+export async function surveysInResult (filter: Filter, onUpdate: () => void): Promise<ObjQueryType<any>> {
   const result = await getRefs(filter, onUpdate)
   return { $in: result }
 }
 
-export async function tagsNinResult (filter: Filter, onUpdate: () => void): Promise<ObjQueryType<any>> {
+export async function surveysNinResult (filter: Filter, onUpdate: () => void): Promise<ObjQueryType<any>> {
   const result = await getRefs(filter, onUpdate)
   return { $nin: result }
 }
@@ -45,13 +54,21 @@ export async function createSurveyElement (props: Record<string, any> = {}): Pro
 
 export default async (): Promise<Resources> => ({
   component: {
-    Surveys,
+    SurveyReferencePresenter,
     SurveyElementPresenter,
+    SurveysPresenter,
     SurveysView,
+    SurveysFilter,
     SurveysEditor,
     SurveysDropdownEditor,
+    SurveysItemPresenter,
+    SurveyElementCountPresenter,
+    SurveysAttributeEditor,
     SurveysEditorPopup,
-    SurveyElement
+    LabelsPresenter,
+    ObjectsSurveysEditorPopup,
+    SurveysFilterPresenter,
+    DocSurveysEditor
   },
   actionImpl: {
     Open: (value: SurveyElementType, evt: MouseEvent) => {
@@ -60,7 +77,7 @@ export default async (): Promise<Resources> => ({
   },
   function: {
     CreateSurveyElement: createSurveyElement,
-    FilterTagsInResult: tagsInResult,
-    FilterTagsNinResult: tagsNinResult
+    FilterSurveysInResult: surveysInResult,
+    FilterSurveysNinResult: surveysNinResult
   }
 })

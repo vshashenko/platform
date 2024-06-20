@@ -27,6 +27,7 @@ import { notificationOperation } from '@hcengineering/model-notification'
 import { settingOperation } from '@hcengineering/model-setting'
 import { recruitOperation } from '@hcengineering/model-recruit'
 import { tagsOperation } from '@hcengineering/model-tags'
+import { surveysOperation } from '@hcengineering/model-surveys'
 import { taskOperation } from '@hcengineering/model-task'
 import { inventoryOperation } from '@hcengineering/model-inventory'
 import { telegramOperation } from '@hcengineering/model-telegram'
@@ -65,6 +66,7 @@ export const migrateOperations: [string, MigrateOperation][] = [
   ['contact', contactOperation],
   ['guest', guestOperation],
   ['tags', tagsOperation],
+  ['surveys', surveysOperation],
   ['setting', settingOperation],
   ['tracker', trackerOperation],
   ['documents', documentsOperation],

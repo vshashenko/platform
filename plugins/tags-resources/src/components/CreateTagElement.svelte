@@ -36,7 +36,9 @@
   export let targetClass: Ref<Class<Doc>>
   export let keyTitle: string = ''
   export let title: string = ''
-
+  
+    console.log(targetClass);
+    
   let description = ''
   let color: number = getColorNumberByText(title)
 

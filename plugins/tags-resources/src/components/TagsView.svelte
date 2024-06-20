@@ -71,7 +71,6 @@
         v.modifiedOn = Math.max(v.modifiedOn, d.modifiedOn)
         result.set(d.tag, v)
       }
-
       tagElements = result
     },
     {

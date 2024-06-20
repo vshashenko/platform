@@ -43,7 +43,13 @@ export default mergeIds(surveysId, surveys, {
     CategoryTargetClass: '' as IntlString,
     CategorySurveysLabel: '' as IntlString,
     DefaultLabel: '' as IntlString,
-    FormItemsLabel: '' as IntlString
+    FormItemsLabel: '' as IntlString,
+    IdLabel: '' as IntlString,
+    TypeLabel: '' as IntlString,
+    QuestionLabel: '' as IntlString,
+    OptionsLabel: '' as IntlString,
+    TargetFormItemsLabel: '' as IntlString,
+    FormItemLabel: '' as IntlString
   },
   actionImpl: {
     Open: '' as ViewAction

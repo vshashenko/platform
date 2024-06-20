@@ -1,11 +1,38 @@
 <script lang="ts">
-  import surveys from '@hcengineering/surveys'
-  import tags from '@hcengineering/tags'
-  import { Component } from '@hcengineering/ui'
+  import surveys, { SurveyElement } from '@hcengineering/surveys'
+  import { Component, getCurrentResolvedLocation, navigate } from '@hcengineering/ui'
   import recruit from '../plugin'
-  console.log('surveys', surveys);
-  console.log('tags', tags);
+  import { getClient } from '@hcengineering/presentation'
+  import { buildFilterKey, setFilters } from '@hcengineering/view-resources'
+  import { Filter } from '@hcengineering/view'
+  import { selectedSurveyElements } from '@hcengineering/surveys-resources'
   
+  function setFilterTag (survey: SurveyElement) {
+    const client = getClient()
+    const hierarchy = client.getHierarchy()
+    const attribute = hierarchy.getAttribute(recruit.mixin.Candidate, 'surveys')
+    const key = buildFilterKey(hierarchy, recruit.mixin.Candidate, '_class', attribute)
+    const filter = {
+      key,
+      value: [survey._id],
+      props: { level: 0 },
+      modes: [surveys.filter.FilterSurveysIn, surveys.filter.FilterSurveysNin],
+      mode: surveys.filter.FilterSurveysIn,
+      index: 1
+    } as unknown as Filter
+    setFilters([filter])
+  }
+  async function onSurvey (survey: SurveyElement): Promise<void> {
+    selectedSurveyElements.set([survey._id])
+    const loc = getCurrentResolvedLocation()
+    loc.path[2] = 'recruit'
+    loc.path[3] = 'talents'
+    loc.path.length = 4
+    navigate(loc)
+    setTimeout(() => {
+      setFilterTag(survey)
+    }, 200)
+  }
   
 </script>
 <Component
@@ -17,9 +44,7 @@
     item: recruit.string.SurveyLabel,
     key: 'surveys',
     сreateItemLabel: recruit.string.SurveyCreateLabel,
-    onTag: () => {
-      console.log('onTag');
-    }
+    onSurvey
   }}
 >
 </Component>

@@ -581,6 +581,7 @@ async function doPerformSync (ops: SyncOptions & SyncOptionsExtra): Promise<Bitr
       const defaultCategories = await ops.client.findAll(tags.class.TagCategory, {
         default: true
       })
+      console.log(defaultCategories)
       let synchronized = 0
       while (toProcess.length > 0) {
         console.log('LOAD:', synchronized, added)
@@ -617,7 +618,7 @@ async function doPerformSync (ops: SyncOptions & SyncOptionsExtra): Promise<Bitr
             allTagElements,
             ops.blobProvider
           )
-
+          console.log(res)
           if (ops.mapping.comments && ((ops.syncComments ?? true) || (ops.syncEmails ?? true))) {
             await downloadComments(res, ops, ops.commentFieldKeys, ops.userList, ops.ownerTypeValues)
           }

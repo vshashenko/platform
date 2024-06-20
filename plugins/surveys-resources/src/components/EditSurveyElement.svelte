@@ -27,6 +27,7 @@
   const dispatch = createEventDispatcher();
   const client = getClient();
 
+  console.log(value);
 
   const data: Omit<Data<SurveyElement>, 'targetClass'> = {
     title: value.title,

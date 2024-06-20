@@ -1,8 +1,9 @@
 <script lang="ts">
-  import { Card } from '@hcengineering/presentation'
+  import { Card, createQuery } from '@hcengineering/presentation'
   import {
     Button,
     DropdownLabels,
+    DropdownTextItem,
     EditBox,
     eventToHTMLElement,
     getColorNumberByText,
@@ -19,10 +20,14 @@
   import ShortText from './formItems/ShortText.svelte'
   import Select from './formItems/Select.svelte'
   import Checkbox from './formItems/Checkbox.svelte'
+  import { FormItem } from '@hcengineering/surveys'
+  import { Class, Doc, Ref } from '@hcengineering/core'
 
   export let keyTitle: string = ''
   export let title: string = ''
-
+  export let targetClass: Ref<Class<Doc>>
+  let formItems: DropdownTextItem[] = []
+  let items: any[] = []
   let color: number = getColorNumberByText(title)
   let colorSet = false
 
@@ -30,7 +35,7 @@
     color = getColorNumberByText(title)
   }
 
-  async function createSurveyFnc (): Promise<void> {
+  async function createSurveyFnc(): Promise<void> {
     const res = await createSurvey(title, color, formElements)
     dispatch('close', res)
   }
@@ -38,8 +43,6 @@
   export function canClose(): boolean {
     return title === ''
   }
-
-  const dispatch = createEventDispatcher()
 
   const showColorPopup = (evt: MouseEvent): void => {
     showPopup(
@@ -66,34 +69,60 @@
     defaultValue?: string
   }
 
-  let formElements: FormElement[] = []
+  let formElements: FormItem[] = []
   let selected: string | string[] = []
 
   // Add form element based on selection
   function addFormElement(type: FormElementType): void {
-    const newElement: FormElement = { id: Date.now(), type, question: '', options: type === 'select' || type === 'checkbox' ? [''] : undefined, defaultValue: ''}
+    const newElement: FormElement = {
+      id: Date.now(),
+      type,
+      question: '',
+      options: type === 'select' || type === 'checkbox' ? [''] : undefined,
+      defaultValue: ''
+    }
     formElements = [...formElements, newElement]
   }
 
   // Remove form element
   function removeFormElement(id: number): void {
-    formElements = formElements.filter(element => element.id !== id)
+    formElements = formElements.filter((element) => element.id !== id)
   }
 
   // Update form element
   function updateQuestion(id: number, newQuestion: string): void {
-    formElements = formElements.map(element => element.id === id ? { ...element, question: newQuestion } : element)
+    formElements = formElements.map((element) => (element.id === id ? { ...element, question: newQuestion } : element))
   }
 
   // Update form element default value
   function updateDefaultValue(id: number, newDefaultValue: string): void {
-    formElements = formElements.map(element => element.id === id ? { ...element, defaultValue: newDefaultValue } : element)
+    formElements = formElements.map((element) =>
+      element.id === id ? { ...element, defaultValue: newDefaultValue } : element
+    )
   }
 
   function updateOptions(id: number, newOptions: string[]): void {
-    formElements = formElements.map(element => element.id === id ? { ...element, options: newOptions } : element)
+    formElements = formElements.map((element) => (element.id === id ? { ...element, options: newOptions } : element))
   }
 
+  const dispatch = createEventDispatcher()
+
+  const query = createQuery()
+
+  query.query(surveys.class.FormELement, { targetClass }, async (result) => {
+    const newItems: DropdownTextItem[] = []
+    console.log('result', result)
+
+    for (const r of result) {
+      newItems.push({
+        id: r._id,
+        label: 'yey'
+      })
+    }
+    items = result
+    formItems = newItems
+    console.log('formItems', formItems);
+  })
 </script>
 
 <Card
@@ -125,7 +154,7 @@
     </div>
   </div>
   <svelte:fragment slot="pool">
-    <div class="ml-12">      
+    <div class="ml-12">
       <DropdownLabels
         icon={IconFolder}
         label={surveys.string.SurveyCreateLabel}
@@ -136,7 +165,7 @@
           { label: 'Long Text', id: 'long-text' },
           { label: 'Short Text', id: 'short-text' },
           { label: 'Select', id: 'select' },
-          { label: 'Checkbox', id: 'checkbox' },
+          { label: 'Checkbox', id: 'checkbox' }
         ]}
         on:selected={(event) => {
           const selectedValue = event.detail
@@ -151,33 +180,35 @@
       <div class="form-element">
         <div class="form-content">
           {#if element.type === 'long-text'}
-            <LongText question={element.question}  
-            on:changeQuestion={(event) => updateQuestion(element.id, event.detail)} 
-            on:changeDefaultValue={(event) => updateDefaultValue(element.id, event.detail)}
+            <LongText
+              question={element.question}
+              on:changeQuestion={(event) => updateQuestion(element.id, event.detail)}
+              on:changeDefaultValue={(event) => updateDefaultValue(element.id, event.detail)}
             />
           {/if}
           {#if element.type === 'short-text'}
-            <ShortText question={element.question} 
-            on:changeQuestion={(event) => updateQuestion(element.id, event.detail)} 
-            on:changeDefaultValue={(event) => updateDefaultValue(element.id, event.detail)}
+            <ShortText
+              question={element.question}
+              on:changeQuestion={(event) => updateQuestion(element.id, event.detail)}
+              on:changeDefaultValue={(event) => updateDefaultValue(element.id, event.detail)}
             />
           {/if}
           {#if element.type === 'select'}
-            <Select 
-            question={element.question} 
-            options={element.options} 
-            on:changeDefaultValue={(event) => updateDefaultValue(element.id, event.detail)}
-            on:changeQuestion={(event) => updateQuestion(element.id, event.detail)} 
-            on:changeOptions={(event) => updateOptions(element.id, event.detail)} 
+            <Select
+              question={element.question}
+              options={element.options}
+              on:changeDefaultValue={(event) => updateDefaultValue(element.id, event.detail)}
+              on:changeQuestion={(event) => updateQuestion(element.id, event.detail)}
+              on:changeOptions={(event) => updateOptions(element.id, event.detail)}
             />
           {/if}
           {#if element.type === 'checkbox'}
-            <Checkbox 
-            question={element.question} 
-            options={element.options} 
-            on:changeDefaultValue={(event) => updateDefaultValue(element.id, event.detail)}
-            on:changeQuestion={(event) => updateQuestion(element.id, event.detail)} 
-            on:changeOptions={(event) => updateOptions(element.id, event.detail)} 
+            <Checkbox
+              question={element.question}
+              options={element.options}
+              on:changeDefaultValue={(event) => updateDefaultValue(element.id, event.detail)}
+              on:changeQuestion={(event) => updateQuestion(element.id, event.detail)}
+              on:changeOptions={(event) => updateOptions(element.id, event.detail)}
             />
           {/if}
         </div>

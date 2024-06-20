@@ -580,6 +580,7 @@ async function createTagCategories (tx: TxOperations): Promise<void> {
     },
     documents.category.OtherTemplate
   )
+  console.log('Created default board')
 }
 
 async function migrateDocumentSpacesMixins (client: MigrationClient): Promise<void> {

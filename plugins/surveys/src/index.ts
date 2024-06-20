@@ -34,6 +34,7 @@ export interface SurveyElement extends Doc {
 export interface SurveyReference extends AttachedDoc {
   title: string
   formItem: FormItem[]
+  survey: SurveyElement
   color: number
 }
 
@@ -65,7 +66,8 @@ export const surveysId = 'surveys' as Plugin
 const surveysPlugin = plugin(surveysId, {
   class: {
     SurveyElement: '' as Ref<Class<SurveyElement>>,
-    SurveyReference: '' as Ref<Class<SurveyReference>>
+    SurveyReference: '' as Ref<Class<SurveyReference>>,
+    FormELement: '' as Ref<Class<any>>
   },
   space: {
     Surveys: '' as Ref<Space>
@@ -77,6 +79,7 @@ const surveysPlugin = plugin(surveysId, {
     SurveysView: '' as AnyComponent,
     SurveysEditor: '' as AnyComponent,
     SurveysDropdownEditor: '' as AnyComponent,
+    SurveysPresenter: '' as AnyComponent,
     SurveysAttributeEditor: '' as AnyComponent,
     LabelsPresenter: '' as AnyComponent,
     SurveysEditorPopup: '' as AnyComponent

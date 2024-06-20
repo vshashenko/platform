@@ -1026,8 +1026,8 @@ export function devTool (
     })
 
   program
-    .command('fix-forms <workspace> <step>')
-    .description('fix forms for workspace')
+    .command('fix-surveys <workspace> <step>')
+    .description('fix surveys for workspace')
     .action(async (workspace: string, step: string) => {
       const { mongodbUri } = prepareTools()
       await fixSurveys(mongodbUri, getWorkspaceId(workspace, productId), transactorUrl, step)

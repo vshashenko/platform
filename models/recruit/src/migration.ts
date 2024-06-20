@@ -165,7 +165,7 @@ async function migrateDefaultTypeMixins (client: MigrationClient): Promise<void>
 
 async function createDefaults (client: MigrationUpgradeClient, tx: TxOperations): Promise<void> {
   await createDefaultSpace(client, recruit.space.Reviews, { name: 'Reviews' })
-
+  console.log('Created default board')
   await createOrUpdate(
     tx,
     tags.class.TagCategory,
@@ -195,7 +195,7 @@ async function createDefaults (client: MigrationUpgradeClient, tx: TxOperations)
       (recruit.category.Category + '.' + c.id) as Ref<TagCategory>
     )
   }
-
+  console.log('Created default board')
   await createSequence(tx, recruit.class.Review)
   await createSequence(tx, recruit.class.Opinion)
   await createSequence(tx, recruit.class.Applicant)

@@ -801,37 +801,6 @@
         object.surveys = object?.surveys.filter((it) => it._id !== evt.detail)
       }}
     />
-    {#if object?.surveys.length > 0}
-      <div class="antiComponent antiEmphasized w-full flex-grow mt-2">
-        <Component
-          is={tags.component.TagsEditor}
-          props={{
-            disabled: loading,
-            focusIndex: 102,
-            items: object?.surveys,
-            key,
-            surveyKey,
-            targetClass: recruit.mixin.Candidate,
-            showTitle: false,
-            elements,
-            newElements,
-            countLabel: recruit.string.NumberSurveys
-          }}
-          on:open={(evt) => {
-            addTagRef(evt.detail)
-          }}
-          on:delete={(evt) => {
-            object.surveys = object?.surveys.filter((it) => it._id !== evt.detail)
-          }}
-          on:change={(evt) => {
-            evt.detail.tag.weight = evt.detail.weight
-            object.surveys = object?.surveys
-          }}
-        />
-      </div>
-    {:else}
-      <div class="flex-grow w-full" style="margin: 0" />
-    {/if}
     <InlineAttributeBar
       _class={recruit.mixin.Candidate}
       {object}

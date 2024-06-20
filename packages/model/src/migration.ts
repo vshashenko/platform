@@ -198,6 +198,7 @@ export async function createDefaultSpace<T extends Space> (
   props: RequiredData<T>,
   _class: Ref<Class<T>> = core.class.SystemSpace
 ): Promise<void> {
+  console.log('createDefaultSpace')
   const defaults: DefaultSpaceData<T> = {
     description: '',
     private: false,

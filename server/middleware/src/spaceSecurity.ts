@@ -131,6 +131,7 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
       if (space._class === core.class.SystemSpace) {
         this.systemSpaces.add(space._id)
       } else {
+        console.log('space', space)
         this.addSpace(space)
       }
     }
