@@ -163,5 +163,22 @@ export default mergeIds(recruitId, recruit, {
     Offer: '' as Ref<Status>,
     Won: '' as Ref<Status>,
     Lost: '' as Ref<Status>
+  },
+  formElementTypes: {
+    LongText: '' as Ref<Status>,
+    ShortText: '' as Ref<Status>,
+    Date: '' as Ref<Status>,
+    Number: '' as Ref<Status>,
+    SingleSelect: '' as Ref<Status>,
+    MultiSelect: '' as Ref<Status>,
+    File: '' as Ref<Status>,
+    Checkbox: '' as Ref<Status>,
+    Email: '' as Ref<Status>,
+    Phone: '' as Ref<Status>,
+    URL: '' as Ref<Status>,
+    Address: '' as Ref<Status>,
+    Time: '' as Ref<Status>,
+    DateTime: '' as Ref<Status>,
+    Boolean: '' as Ref<Status>
   }
 })

@@ -57,6 +57,7 @@ import { serverRecruitId, createModel as serverRecruitModel } from '@hcengineeri
 import { serverRequestId, createModel as serverRequestModel } from '@hcengineering/model-server-request'
 import { serverSettingId, createModel as serveSettingModel } from '@hcengineering/model-server-setting'
 import { serverTagsId, createModel as serverTagsModel } from '@hcengineering/model-server-tags'
+import { serverSurveysId, createModel as serverSurveysModel } from '@hcengineering/model-server-surveys'
 import { serverTaskId, createModel as serverTaskModel } from '@hcengineering/model-server-task'
 import { serverTelegramId, createModel as serverTelegramModel } from '@hcengineering/model-server-telegram'
 import { serverTemplatesId, createModel as serverTemplatesModel } from '@hcengineering/model-server-templates'
@@ -382,6 +383,7 @@ export default function buildModel (enabled: string[] = ['*'], disabled: string[
     [serverInventoryModel, serverInventoryId],
     [serverLeadModel, serverLeadId],
     [serverTagsModel, serverTagsId],
+    [serverSurveysModel, serverSurveysId],
     [serverTaskModel, serverTaskId],
     [serverTrackerModel, serverTrackerId],
     [serverCalendarModel, serverCalendarId],

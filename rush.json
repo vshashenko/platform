@@ -1232,6 +1232,13 @@
       "projectFolder": "models/server-tags",
       "shouldPublish": false
     },
+
+    {
+      "packageName": "@hcengineering/model-server-surveys",
+      "projectFolder": "models/server-surveys",
+      "shouldPublish": false
+    },
+    
     {
       "packageName": "@hcengineering/server-tags-resources",
       "projectFolder": "server-plugins/tags-resources",

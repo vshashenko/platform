@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { type Domain, IndexKind, type Ref } from '@hcengineering/core'
+import { type Domain, IndexKind } from '@hcengineering/core'
 import { type Builder, Index, Prop, TypeString, TypeAny, Model, UX, TypeRef } from '@hcengineering/model'
 import core, { TAttachedDoc, TDoc } from '@hcengineering/model-core'
 import view from '@hcengineering/model-view'
@@ -23,7 +23,6 @@ import type {
   SurveyReference
 } from '@hcengineering/surveys'
 import surveys from './plugin'
-import { IntlString } from '@hcengineering/platform'
 
 export { type SurveyElement, type SurveyReference, surveysId } from '@hcengineering/surveys'
 export { surveysOperation } from './migration'
@@ -54,7 +53,7 @@ export class TSurveyReference extends TAttachedDoc implements SurveyReference {
 
   @Prop(TypeRef(surveys.class.SurveyElement), surveys.string.SurveyLabel)
   @Index(IndexKind.Indexed)
-    survey!: Ref<SurveyElement>
+    survey!: SurveyElement
 
   @Prop(TypeRef(surveys.class.SurveyElement), surveys.string.SurveyLabel)
   @Index(IndexKind.Indexed)
@@ -64,9 +63,9 @@ export class TSurveyReference extends TAttachedDoc implements SurveyReference {
     color!: number
 }
 
-@Model(surveys.class.FormELement, core.class.Doc, DOMAIN_SURVEYS)
+@Model(surveys.class.FormElement, core.class.Doc, DOMAIN_SURVEYS)
 @UX(surveys.string.TargetFormItemsLabel)
-export class TFormELement extends TDoc implements FormItem {
+export class TFormElement extends TDoc implements FormItem {
   @Prop(TypeString(), surveys.string.IdLabel)
     id!: number
 
@@ -84,7 +83,7 @@ export class TFormELement extends TDoc implements FormItem {
 }
 
 export function createModel (builder: Builder): void {
-  builder.createModel(TSurveyElement, TSurveyReference, TFormELement)
+  builder.createModel(TSurveyElement, TSurveyReference, TFormElement)
 
   builder.mixin(surveys.class.SurveyElement, core.class.Class, view.mixin.ObjectFactory, {
     create: surveys.function.CreateSurveyElement

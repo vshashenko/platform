@@ -26,12 +26,14 @@ import {
   type ModelLogger
 } from '@hcengineering/model'
 import tags, { type TagCategory } from '@hcengineering/model-tags'
+import surveys from '@hcengineering/model-surveys'
 import task, { DOMAIN_TASK, createSequence, migrateDefaultStatusesBase } from '@hcengineering/model-task'
 import { recruitId, type Applicant } from '@hcengineering/recruit'
 
 import { DOMAIN_SPACE } from '@hcengineering/model-core'
 import recruit from './plugin'
-import { defaultApplicantStatuses } from './spaceType'
+import { defaultApplicantStatuses, defaultFormElementTypes } from './spaceType'
+import { FormElementType } from '../../../plugins/surveys/types'
 
 export const recruitOperation: MigrateOperation = {
   async preMigrate (client: MigrationClient, logger: ModelLogger): Promise<void> {
@@ -59,7 +61,7 @@ export const recruitOperation: MigrateOperation = {
   async upgrade (client: MigrationUpgradeClient): Promise<void> {
     await tryUpgrade(client, recruitId, [
       {
-        state: 'create-defaults-v2',
+        state: 'create-defaults-v5',
         func: async (client) => {
           const tx = new TxOperations(client, core.account.System)
           await createDefaults(client, tx)
@@ -165,7 +167,6 @@ async function migrateDefaultTypeMixins (client: MigrationClient): Promise<void>
 
 async function createDefaults (client: MigrationUpgradeClient, tx: TxOperations): Promise<void> {
   await createDefaultSpace(client, recruit.space.Reviews, { name: 'Reviews' })
-  console.log('Created default board')
   await createOrUpdate(
     tx,
     tags.class.TagCategory,
@@ -193,6 +194,20 @@ async function createDefaults (client: MigrationUpgradeClient, tx: TxOperations)
         default: false
       },
       (recruit.category.Category + '.' + c.id) as Ref<TagCategory>
+    )
+  }
+  for (const formElementType of defaultFormElementTypes) {
+    await createOrUpdate(
+      tx,
+      surveys.class.FormElement,
+      surveys.space.Surveys,
+      {
+        label: formElementType.label,
+        targetClass: recruit.mixin.Candidate,
+        default: true,
+        type: formElementType.type
+      },
+      (recruit.category.Category + '.' + formElementType.id) as Ref<TagCategory>
     )
   }
   console.log('Created default board')

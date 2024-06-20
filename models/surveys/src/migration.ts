@@ -13,7 +13,7 @@ export const surveysOperation: MigrateOperation = {
   async upgrade (client: MigrationUpgradeClient): Promise<void> {
     await tryUpgrade(client, surveysId, [
       {
-        state: 'create-defaults-space_surveys',
+        state: 'create-defaults-space_surveys1',
         func: async (client) => {
           await createDefaultSpace(client, surveys.space.Surveys, { name: 'Surveys', description: 'Space for all surveys' })
         }

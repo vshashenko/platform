@@ -71,6 +71,84 @@ export const defaultApplicantStatuses = [
   }
 ]
 
+export const defaultFormElementTypes = [
+  {
+    id: plugin.formElementTypes.LongText,
+    label: 'Long Text',
+    type: 'long-text'
+  },
+  {
+    id: plugin.formElementTypes.ShortText,
+    label: 'Short Text',
+    type: 'short-text'
+  },
+  {
+    id: plugin.formElementTypes.Date,
+    label: 'Date',
+    type: 'date'
+  },
+  {
+    id: plugin.formElementTypes.Number,
+    label: 'Number',
+    type: 'number'
+  },
+  {
+    id: plugin.formElementTypes.SingleSelect,
+    label: 'Single Select',
+    type: 'select'
+  },
+  {
+    id: plugin.formElementTypes.MultiSelect,
+    label: 'Multi Select',
+    type: 'select'
+  },
+  {
+    id: plugin.formElementTypes.File,
+    label: 'File',
+    type: 'file'
+  },
+  {
+    id: plugin.formElementTypes.Checkbox,
+    label: 'Checkbox',
+    type: 'checkbox'
+  },
+  {
+    id: plugin.formElementTypes.Email,
+    label: 'Email',
+    type: 'email'
+  },
+  {
+    id: plugin.formElementTypes.Phone,
+    label: 'Phone',
+    type: 'phone'
+  },
+  {
+    id: plugin.formElementTypes.URL,
+    label: 'URL',
+    type: 'url'
+  },
+  {
+    id: plugin.formElementTypes.Address,
+    label: 'Address',
+    type: 'address'
+  },
+  {
+    id: plugin.formElementTypes.Time,
+    label: 'Time',
+    type: 'time'
+  },
+  {
+    id: plugin.formElementTypes.DateTime,
+    label: 'Date Time',
+    type: 'datetime'
+  },
+  {
+    id: plugin.formElementTypes.Boolean,
+    label: 'Boolean',
+    type: 'boolean'
+  }
+]
+
 export function defineSpaceType (builder: Builder): void {
   builder.createModel(TDefaultVacancyTypeData)
   builder.createDoc(

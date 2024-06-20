@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Card, createQuery } from '@hcengineering/presentation'
+  import { Card, createQuery, getClient } from '@hcengineering/presentation'
   import {
     Button,
     DropdownLabels,
@@ -20,14 +20,14 @@
   import ShortText from './formItems/ShortText.svelte'
   import Select from './formItems/Select.svelte'
   import Checkbox from './formItems/Checkbox.svelte'
-  import { FormItem } from '@hcengineering/surveys'
+  import { FormElementType, FormItem } from '@hcengineering/surveys'
   import { Class, Doc, Ref } from '@hcengineering/core'
 
   export let keyTitle: string = ''
   export let title: string = ''
   export let targetClass: Ref<Class<Doc>>
   let formItems: DropdownTextItem[] = []
-  let items: any[] = []
+  let formElements: FormItem[] = []
   let color: number = getColorNumberByText(title)
   let colorSet = false
 
@@ -58,23 +58,14 @@
     )
   }
 
-  // Form elements list
-  type FormElementType = 'long-text' | 'short-text' | 'select' | 'checkbox' | 'range'
 
-  interface FormElement {
-    id: number
-    type: FormElementType
-    question: string
-    options?: string[]
-    defaultValue?: string
-  }
 
-  let formElements: FormItem[] = []
   let selected: string | string[] = []
 
   // Add form element based on selection
-  function addFormElement(type: FormElementType): void {
-    const newElement: FormElement = {
+  function addFormElement(elem: any): void {
+    const type = elem!.type
+    const newElement: FormItem = {
       id: Date.now(),
       type,
       question: '',
@@ -82,19 +73,18 @@
       defaultValue: ''
     }
     formElements = [...formElements, newElement]
+    console.log('formElements', formElements);
+    
   }
 
-  // Remove form element
   function removeFormElement(id: number): void {
     formElements = formElements.filter((element) => element.id !== id)
   }
 
-  // Update form element
   function updateQuestion(id: number, newQuestion: string): void {
     formElements = formElements.map((element) => (element.id === id ? { ...element, question: newQuestion } : element))
   }
 
-  // Update form element default value
   function updateDefaultValue(id: number, newDefaultValue: string): void {
     formElements = formElements.map((element) =>
       element.id === id ? { ...element, defaultValue: newDefaultValue } : element
@@ -108,18 +98,18 @@
   const dispatch = createEventDispatcher()
 
   const query = createQuery()
-
-  query.query(surveys.class.FormELement, { targetClass }, async (result) => {
-    const newItems: DropdownTextItem[] = []
-    console.log('result', result)
+  
+  query.query(surveys.class.FormElement, { targetClass }, async (result) => {
+    const newItems: any[] = []
+    console.log('result', result, 'targetClass', targetClass)
 
     for (const r of result) {
       newItems.push({
         id: r._id,
-        label: 'yey'
+        label: r.label,
+        type: r.type
       })
     }
-    items = result
     formItems = newItems
     console.log('formItems', formItems);
   })
@@ -161,15 +151,20 @@
         kind={'regular'}
         size={'large'}
         bind:selected
-        items={[
-          { label: 'Long Text', id: 'long-text' },
-          { label: 'Short Text', id: 'short-text' },
-          { label: 'Select', id: 'select' },
-          { label: 'Checkbox', id: 'checkbox' }
-        ]}
+        items={formItems}
         on:selected={(event) => {
           const selectedValue = event.detail
-          addFormElement(selectedValue)
+          console.log('selectedValue', selectedValue);
+          const selectedValueIndex = formItems.find((item) => item.id === selectedValue)
+          if(!selectedValueIndex) return
+          const formElement = {
+            id: Date.now(),
+            type: selectedValueIndex.type,
+            question: '',
+            options: selectedValueIndex.label === 'select' || selectedValueIndex.label === 'checkbox' ? [''] : undefined,
+            defaultValue: ''
+          }
+          addFormElement(formElement)
         }}
       />
     </div>

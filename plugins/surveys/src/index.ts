@@ -51,7 +51,7 @@ export interface FormItem {
   id: number
   type: FormElementType
   question: string
-  options?: string[]
+  options?: string[] | undefined
   defaultValue?: string
 }
 
@@ -67,7 +67,7 @@ const surveysPlugin = plugin(surveysId, {
   class: {
     SurveyElement: '' as Ref<Class<SurveyElement>>,
     SurveyReference: '' as Ref<Class<SurveyReference>>,
-    FormELement: '' as Ref<Class<any>>
+    FormElement: '' as Ref<Class<any>>
   },
   space: {
     Surveys: '' as Ref<Space>

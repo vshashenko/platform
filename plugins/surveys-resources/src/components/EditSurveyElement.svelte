@@ -138,15 +138,30 @@
           on:changeQuestion={(event) => updateFormElement(element.id, 'question', event.detail)}
         />
       {/if}
-      <!-- {#if element.type === 'short-text'}
-        <ShortText question={element.question} defaultValue={element.defaultValue}/>
+      {#if element.type === 'short-text'}
+        <ShortText question={element.question} 
+        defaultValue={element.defaultValue}
+        on:changeDefaultValue={(event) => updateFormElement(element.id, 'defaultValue', event.detail)}
+        on:changeQuestion={(event) => updateFormElement(element.id, 'question', event.detail)}
+        />
       {/if}
       {#if element.type === 'select'}
-        <Select question={element.question} options={element.options} defaultValue={element.defaultValue}/>
+        <Select question={element.question} 
+        options={element.options} 
+        defaultValue={element.defaultValue}
+        on:changeDefaultValue={(event) => updateFormElement(element.id, 'defaultValue', event.detail)}
+        on:changeQuestion={(event) => updateFormElement(element.id, 'question', event.detail)}
+        />
       {/if}
       {#if element.type === 'checkbox'}
-        <Checkbox question={element.question} options={element.options} defaultValue={element.defaultValue}/>
-      {/if} -->
+        <Checkbox 
+        question={element.question} 
+        options={element.options} 
+        defaultValue={element.defaultValue}
+        on:changeDefaultValue={(event) => updateFormElement(element.id, 'defaultValue', event.detail)}
+        on:changeQuestion={(event) => updateFormElement(element.id, 'question', event.detail)}
+        />
+      {/if}
     {/each}
   </div>
   <svelte:fragment slot="pool">
