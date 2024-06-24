@@ -16,13 +16,16 @@
   import { createEventDispatcher } from 'svelte'
   import surveys from '../plugin'
   import { createSurvey, getSurveyStyle } from '../utils'
-  import LongText from './formItems/LongText.svelte'
-  import ShortText from './formItems/ShortText.svelte'
-  import Select from './formItems/Select.svelte'
-  import Checkbox from './formItems/Checkbox.svelte'
-  import { FormElementType, FormItem } from '@hcengineering/surveys'
-  import { Class, Doc, Ref } from '@hcengineering/core'
+  import { FormItem, SurveyElement } from '@hcengineering/surveys'
+  import { Class, Data, Doc, DocumentUpdate, Ref } from '@hcengineering/core'
+  import FormElement from './FormElement.svelte'
 
+
+
+  export let value: SurveyElement;
+  const client = getClient();
+  console.log(value);
+  
   export let keyTitle: string = ''
   export let title: string = ''
   export let targetClass: Ref<Class<Doc>>
@@ -30,6 +33,7 @@
   let formElements: FormItem[] = []
   let color: number = getColorNumberByText(title)
   let colorSet = false
+console.log(targetClass);
 
   $: if (!colorSet) {
     color = getColorNumberByText(title)
@@ -58,11 +62,8 @@
     )
   }
 
-
-
   let selected: string | string[] = []
 
-  // Add form element based on selection
   function addFormElement(elem: any): void {
     const type = elem!.type
     const newElement: FormItem = {
@@ -74,25 +75,37 @@
     }
     formElements = [...formElements, newElement]
     console.log('formElements', formElements);
-    
   }
 
-  function removeFormElement(id: number): void {
+  function updateFormElement(id: string, property: string, val: any) {
+    const element = value.formItems.find(item => item.id === id);
+    if (element) {
+      element[property] = val;
+      value.formItems = [...value.formItems];  // Ensure reactivity
+    }
+  }
+
+  function removeFormElement
+  (element: any): void {
+    console.log('id', element);
+    const {id} = element.detail
     formElements = formElements.filter((element) => element.id !== id)
   }
 
-  function updateQuestion(id: number, newQuestion: string): void {
-    formElements = formElements.map((element) => (element.id === id ? { ...element, question: newQuestion } : element))
+  function updateQuestion(elem: any): void {
+    formElements = formElements.map((element: any) => (element.id === elem.detail.id ? { ...element, question: elem.detail.newQuestion } : element))
   }
 
-  function updateDefaultValue(id: number, newDefaultValue: string): void {
+  function updateDefaultValue(elem: any): void {
     formElements = formElements.map((element) =>
-      element.id === id ? { ...element, defaultValue: newDefaultValue } : element
+      element.id === elem.detail.id ? { ...element, defaultValue: elem.detail.newDefaultValue } : element
     )
   }
 
-  function updateOptions(id: number, newOptions: string[]): void {
-    formElements = formElements.map((element) => (element.id === id ? { ...element, options: newOptions } : element))
+  function updateOptions(elem: any): void {
+    console.log('elem', elem);
+    
+    formElements = formElements.map((element) => (element.id === elem.detail.id ? { ...element, options: elem.detail.newOptions } : element))
   }
 
   const dispatch = createEventDispatcher()
@@ -113,12 +126,39 @@
     formItems = newItems
     console.log('formItems', formItems);
   })
+
+  // async function updateElement() {
+  //   const documentUpdate: DocumentUpdate<SurveyElement> = {
+  //     title: value.title,
+  //     color: value.color,
+  //     formItems: value.formItems
+  //   };
+  //   const refUpdate: DocumentUpdate<any> = {
+  //     title: value.title,
+  //     color: value.color
+  //   };
+
+  //   console.log(documentUpdate);
+    
+  //   await client.update(value, documentUpdate);
+  //   console.log(value);
+        
+  //   const references = await client.findAll(surveys.class.SurveyReference, { survey: value._id });
+
+  //   for (const r of references) {
+  //     const u = client.txFactory.createTxUpdateDoc(r._class, r.space, r._id, refUpdate);
+  //     u.space = core.space.DerivedTx;
+  //     await client.tx(u);
+  //   }
+
+  //   dispatch('close');
+  // }
 </script>
 
 <Card
   label={surveys.string.AddSurvey}
   labelProps={{ word: keyTitle }}
-  okAction={() => createSurveyFnc()}
+  okAction={createSurveyFnc}
   canSave={title.trim().length > 0}
   on:close={() => {
     dispatch('close')
@@ -171,46 +211,17 @@
   </svelte:fragment>
 
   <div class="form-elements">
-    {#each formElements as element (element.id)}
-      <div class="form-element">
-        <div class="form-content">
-          {#if element.type === 'long-text'}
-            <LongText
-              question={element.question}
-              on:changeQuestion={(event) => updateQuestion(element.id, event.detail)}
-              on:changeDefaultValue={(event) => updateDefaultValue(element.id, event.detail)}
-            />
-          {/if}
-          {#if element.type === 'short-text'}
-            <ShortText
-              question={element.question}
-              on:changeQuestion={(event) => updateQuestion(element.id, event.detail)}
-              on:changeDefaultValue={(event) => updateDefaultValue(element.id, event.detail)}
-            />
-          {/if}
-          {#if element.type === 'select'}
-            <Select
-              question={element.question}
-              options={element.options}
-              on:changeDefaultValue={(event) => updateDefaultValue(element.id, event.detail)}
-              on:changeQuestion={(event) => updateQuestion(element.id, event.detail)}
-              on:changeOptions={(event) => updateOptions(element.id, event.detail)}
-            />
-          {/if}
-          {#if element.type === 'checkbox'}
-            <Checkbox
-              question={element.question}
-              options={element.options}
-              on:changeDefaultValue={(event) => updateDefaultValue(element.id, event.detail)}
-              on:changeQuestion={(event) => updateQuestion(element.id, event.detail)}
-              on:changeOptions={(event) => updateOptions(element.id, event.detail)}
-            />
-          {/if}
-        </div>
-        <button class="remove-button" on:click={() => removeFormElement(element.id)}>X</button>
-      </div>
-    {/each}
+      {#each formElements as element (element.id)}
+        <FormElement 
+          {element}
+          on:removeFormElement={removeFormElement}
+          on:updateQuestion={updateQuestion}
+          on:updateDefaultValue={updateDefaultValue}
+          on:updateOptions={updateOptions}
+        />
+      {/each}
   </div>
+  
 </Card>
 
 <style lang="scss">
@@ -221,28 +232,5 @@
   }
   .form-elements {
     margin-top: 1rem;
-  }
-  .form-element {
-    margin-bottom: 1rem;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-  .form-content {
-    flex-grow: 1;
-  }
-  .remove-button {
-    background: none;
-    border: none;
-    color: black;
-    font-weight: bold;
-    font-size: 1.5rem;
-    cursor: pointer;
-    padding: 0;
-    margin-left: 27px;
-    margin-bottom: 110px;
-    display: flex;
-    align-items: start;
-    justify-content: start;
   }
 </style>

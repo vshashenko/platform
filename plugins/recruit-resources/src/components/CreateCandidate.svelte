@@ -731,7 +731,6 @@
         focusIndex: 102,
         items: object.skills,
         key,
-        surveyKey,
         targetClass: recruit.mixin.Candidate,
         showTitle: false,
         elements,
@@ -778,29 +777,7 @@
     {:else}
       <div class="flex-grow w-full" style="margin: 0" />
     {/if}
-    <Component
-      is={tags.component.TagsDropdownEditor}
-      props={{
-        disabled: loading,
-        focusIndex: 102,
-        items: object?.surveys,
-        key,
-        surveyKey,
-        targetClass: recruit.mixin.Candidate,
-        showTitle: false,
-        elements,
-        newElements,
-        countLabel: recruit.string.NumberSurveys,
-        kind: 'regular',
-        size: 'large'
-      }}
-      on:open={(evt) => {
-        addTagRef(evt.detail)
-      }}
-      on:delete={(evt) => {
-        object.surveys = object?.surveys.filter((it) => it._id !== evt.detail)
-      }}
-    />
+    
     <InlineAttributeBar
       _class={recruit.mixin.Candidate}
       {object}

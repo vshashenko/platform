@@ -53,6 +53,7 @@
 
   // TODO: Add $not: {$in: []} query
   $: query.query(surveys.class.SurveyElement, { title: { $like: '%' + search + '%' }, targetClass }, (result) => {
+    console.log(result);
     objects = newElements.concat(result)
   })
 
@@ -68,43 +69,47 @@
     showPopup(CreateSurveyElement, { targetClass, title: search }, 'top', onCreateSurveyElement)
   }
   console.log(targetClass);
+
+function toggleSelection(element) {
+  if (selected.includes(element)) {
+    selected = selected.filter(item => item !== element);
+  } else {
+    selected = [...selected, element];
+  }
+  dispatch('update', { selected });
+}
   
 </script>
 
-<div class="selectPopup maxHeight" use:resizeObserver={() => dispatch('changeContent')}>
+<div class="selectPopup maxHeight">
   <div class="header flex-row-center gap-2">
     <EditWithIcon
       icon={IconSearch}
       size={'large'}
       width={'100%'}
-      autoFocus={!$deviceOptionsStore.isMobile}
+      autoFocus
       bind:value={search}
       {placeholder}
-      {placeholderParam}
       on:change
     />
-    {#if !isSingleCategory}
-      <Button
-        kind={'ghost'}
-        size={'large'}
-        icon={show ? IconView : IconViewHide}
-        on:click={() => {
-          show = !show
-        }}
-      />
+    {#if !hideAdd}
+      <Button kind={'ghost'} size={'large'} icon={IconAdd} on:click={createSurveyElementPopup} />
     {/if}
-    {#if !hideAdd}<Button kind={'ghost'} size={'large'} icon={IconAdd} on:click={createSurveyElementPopup} />{/if}
   </div>
   <div class="scroll">
     <div class="box">
+      {#each objects as element (element._id)}
+        <div
+          class:selectable-item={true}
+          class:selected={selected.includes(element)}
+          on:click={() => toggleSelection(element)}
+        >
+          {element.title}
+        </div>
+      {/each}
       {#if objects.length === 0}
-        {#if !hideAdd && search !== ''}
-          <button class="menu-item focus flex-row-center">
-            <Label label={surveys.string.QuickAddItems} params={{ word: keyLabel, title: search }} />
-          </button>
-        {/if}
         <div class="empty">
-          <Label label={surveys.string.NoItems} params={{ word: keyLabel }} />
+          No items found
         </div>
       {/if}
     </div>

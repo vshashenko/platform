@@ -61,7 +61,7 @@ export const recruitOperation: MigrateOperation = {
   async upgrade (client: MigrationUpgradeClient): Promise<void> {
     await tryUpgrade(client, recruitId, [
       {
-        state: 'create-defaults-v5',
+        state: 'create-defaults-v6',
         func: async (client) => {
           const tx = new TxOperations(client, core.account.System)
           await createDefaults(client, tx)

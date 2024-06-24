@@ -14,16 +14,18 @@
 import { type Resources } from '@hcengineering/platform'
 import { type SurveyElement as SurveyElementType } from '@hcengineering/surveys'
 import { eventToHTMLElement, showPopup } from '@hcengineering/ui'
-import EditSurveyElement from './components/EditSurveyElement.svelte'
 import SurveyElementPresenter from './components/SurveyElementPresenter.svelte'
 import SurveysDropdownEditor from './components/SurveysDropdownEditor.svelte'
 import SurveysEditor from './components/SurveysEditor.svelte'
 import SurveysView from './components/SurveysView.svelte'
+import EditSurveyElement from './components/EditSurveyElement.svelte'
 import SurveysEditorPopup from './components/SurveysEditorPopup.svelte'
 import CreateSurveyElement from './components/CreateSurveyElement.svelte'
 import SurveysItemPresenter from './components/SurveysItemPresenter.svelte'
 import SurveysFilter from './components/SurveysFilter.svelte'
 import SurveysPresenter from './components/SurveysPresenter.svelte'
+import SurveyArrayEditor from './components/SurveyArrayEditor.svelte'
+import SurveysList from './components/SurveysList.svelte'
 import SurveyReferencePresenter from './components/SurveyReferencePresenter.svelte'
 import SurveyElementCountPresenter from './components/SurveyElementCountPresenter.svelte'
 import SurveysAttributeEditor from './components/SurveysAttributeEditor.svelte'
@@ -65,10 +67,13 @@ export default async (): Promise<Resources> => ({
     SurveyElementCountPresenter,
     SurveysAttributeEditor,
     SurveysEditorPopup,
+    EditSurveyElement,
     LabelsPresenter,
     ObjectsSurveysEditorPopup,
     SurveysFilterPresenter,
-    DocSurveysEditor
+    DocSurveysEditor,
+    SurveyArrayEditor,
+    SurveysList
   },
   actionImpl: {
     Open: (value: SurveyElementType, evt: MouseEvent) => {

@@ -174,11 +174,11 @@ export default mergeIds(recruitId, recruit, {
     File: '' as Ref<Status>,
     Checkbox: '' as Ref<Status>,
     Email: '' as Ref<Status>,
-    Phone: '' as Ref<Status>,
     URL: '' as Ref<Status>,
-    Address: '' as Ref<Status>,
     Time: '' as Ref<Status>,
-    DateTime: '' as Ref<Status>,
-    Boolean: '' as Ref<Status>
+    Radio: '' as Ref<Status>,
+    Rating: '' as Ref<Status>,
+    Range: '' as Ref<Status>,
+    Color: '' as Ref<Status>
   }
 })

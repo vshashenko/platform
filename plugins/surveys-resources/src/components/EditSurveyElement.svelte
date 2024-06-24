@@ -1,5 +1,5 @@
 <script lang="ts">
-  import core, { Data, DocumentUpdate } from '@hcengineering/core';
+  import core, { Class, Data, Doc, DocumentUpdate, Ref } from '@hcengineering/core';
   import { Card, createQuery, getClient } from '@hcengineering/presentation';
   import { FormItem, SurveyElement } from '@hcengineering/surveys';
   import {
@@ -23,7 +23,8 @@
 
   export let value: SurveyElement;
   export let keyTitle: string = '';
-
+  export let targetClass: Ref<Class<Doc>>
+  let formItems: DropdownTextItem[] = []
   const dispatch = createEventDispatcher();
   const client = getClient();
 
@@ -83,6 +84,21 @@
     }
   }
   console.log(value);
+
+  const query = createQuery()
+  
+  query.query(surveys.class.FormElement, { targetClass: "recruit:mixin:Candidate" }, async (result) => {
+    const newItems: any[] = []
+    for (const r of result) {
+      newItems.push({
+        id: r._id,
+        label: r.label,
+        type: r.type
+      })
+    }
+    formItems = newItems
+    console.log('formItems', formItems);
+  })
 </script>
 
 <Card
@@ -171,15 +187,20 @@
         label={surveys.string.SurveyCreateLabel}
         kind={'regular'}
         size={'large'}
-        items={[
-          { label: 'Long Text', id: 'long-text' },
-          { label: 'Short Text', id: 'short-text' },
-          { label: 'Select', id: 'select' },
-          { label: 'Checkbox', id: 'checkbox' }
-        ]}
+        items={formItems}
         on:selected={(event) => {
-          const selectedValue = event.detail;
-          addFormElement(selectedValue);
+          const selectedValue = event.detail
+          console.log('selectedValue', selectedValue);
+          const selectedValueIndex = formItems.find((item) => item.id === selectedValue)
+          if(!selectedValueIndex) return
+          const formElement = {
+            id: Date.now(),
+            type: selectedValueIndex.type,
+            question: '',
+            options: selectedValueIndex.label === 'select' || selectedValueIndex.label === 'checkbox' ? [''] : undefined,
+            defaultValue: ''
+          }
+          addFormElement(formElement)
         }}
       />
     </div>

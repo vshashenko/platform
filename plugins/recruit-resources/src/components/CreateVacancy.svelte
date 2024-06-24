@@ -49,6 +49,7 @@
   import recruit from '../plugin'
   import Company from './icons/Company.svelte'
   import Vacancy from './icons/Vacancy.svelte'
+  import SurveyArrayEditor from '@hcengineering/surveys-resources/src/components/SurveyArrayEditor.svelte'
 
   const dispatch = createEventDispatcher()
 
@@ -68,7 +69,7 @@
 
   $: setDefaultMembers(typeType)
 
-  function setDefaultMembers (typeType: ProjectType | undefined): void {
+  function setDefaultMembers(typeType: ProjectType | undefined): void {
     if (typeType === undefined) return
     if (membersChanged) return
     if (typeType.members === undefined || typeType.members.length === 0) return
@@ -92,7 +93,7 @@
     location: '',
     type: typeId as Ref<ProjectType>
   }
-  export function canClose (): boolean {
+  export function canClose(): boolean {
     return name === '' && typeId !== undefined
   }
 
@@ -144,7 +145,7 @@
     rolesQuery.unsubscribe()
   }
 
-  async function saveIssue (
+  async function saveIssue(
     id: Ref<VacancyClass>,
     space: Ref<Project>,
     template: IssueTemplateData,
@@ -209,7 +210,7 @@
     return resId
   }
 
-  async function createVacancy (): Promise<void> {
+  async function createVacancy(): Promise<void> {
     if (typeId === undefined || typeType === undefined) {
       throw Error(`Failed to find target project type: ${typeId}`)
     }
@@ -271,7 +272,7 @@
 
   let descriptionBox: AttachmentStyledBox
 
-  function handleTypeChange (evt: CustomEvent<Ref<ProjectType>>): void {
+  function handleTypeChange(evt: CustomEvent<Ref<ProjectType>>): void {
     if (typeId == null) {
       typeId = evt.detail
       return
@@ -293,7 +294,7 @@
     )
   }
 
-  function handleRoleAssignmentChanged (roleId: Ref<Role>, newMembers: Ref<Account>[]): void {
+  function handleRoleAssignmentChanged(roleId: Ref<Role>, newMembers: Ref<Account>[]): void {
     if (rolesAssignment === undefined) {
       rolesAssignment = {}
     }
@@ -381,6 +382,16 @@
     />
 
     <AccountArrayEditor
+      bind:value={members}
+      label={contact.string.Members}
+      onChange={() => {
+        membersChanged = true
+      }}
+      kind={'regular'}
+      size={'large'}
+    />
+
+    <SurveyArrayEditor
       bind:value={members}
       label={contact.string.Members}
       onChange={() => {

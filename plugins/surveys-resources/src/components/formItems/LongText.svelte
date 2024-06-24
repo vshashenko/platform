@@ -7,7 +7,7 @@
   let updatedQuestion = question;
   let updatedDefaultValue = defaultValue;
   let editingQuestion = false;
-
+  
   function handleInputChange() {
     dispatch('changeQuestion', updatedQuestion);
   }
