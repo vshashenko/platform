@@ -670,8 +670,8 @@ export interface BaseWorkspaceInfo {
 
   createdBy: string
 
-  creating?: boolean
-  createProgress?: number // Some progress
+  mode: 'pending-creation' | 'creating' | 'upgrading' | 'deleting' | 'active'
+  progress?: number // Some progress
 
   endpoint: string
 }

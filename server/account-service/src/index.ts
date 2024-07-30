@@ -5,9 +5,8 @@
 import account, {
   ACCOUNT_DB,
   EndpointKind,
-  UpgradeWorker,
+  type UpgradeWorker,
   accountId,
-  cleanInProgressWorkspaces,
   getAllTransactors,
   getMethods
 } from '@hcengineering/account'
@@ -113,25 +112,6 @@ export function serveAccount (
   void client.then(async (p: MongoClient) => {
     const db = p.db(ACCOUNT_DB)
     registerProviders(measureCtx, app, router, db, productId, serverSecret, frontURL, brandings)
-
-    // We need to clean workspace with creating === true, since server is restarted.
-    void cleanInProgressWorkspaces(db, productId)
-
-    const performUpgrade = (process.env.PERFORM_UPGRADE ?? 'true') === 'true'
-    if (performUpgrade) {
-      await measureCtx.with('upgrade-all-models', {}, async (ctx) => {
-        worker = new UpgradeWorker(db, p, version, txes, migrateOperations, productId)
-        await worker.upgradeAll(ctx, {
-          errorHandler: async (ws, err) => {
-            Analytics.handleError(err)
-          },
-          force: false,
-          console: false,
-          logs: 'upgrade-logs',
-          parallel: parseInt(process.env.PARALLEL ?? '1')
-        })
-      })
-    }
   })
 
   const extractToken = (header: IncomingHttpHeaders): string | undefined => {

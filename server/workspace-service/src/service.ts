@@ -13,35 +13,40 @@
 // limitations under the License.
 //
 
-import { BaseWorkspaceInfo, Data, RateLimiter, Tx, Version, type MeasureContext } from '@hcengineering/core'
-import { MigrateOperation, ModelLogger } from '@hcengineering/model'
+import { RateLimiter, systemAccountEmail, type BaseWorkspaceInfo, type Data, type MeasureContext, type Tx, type Version } from '@hcengineering/core'
+import { type MigrateOperation, type ModelLogger } from '@hcengineering/model'
+import { getMongoClient } from '@hcengineering/mongo'
+import { getPendingWorkspace } from '@hcengineering/server-client'
+import { generateToken } from '@hcengineering/server-token'
 import { FileModelLogger } from '@hcengineering/server-tool'
-import { Db, MongoClient } from 'mongodb'
 import path from 'path'
-import { Workspace, WorkspaceInfo, listWorkspacesRaw, updateWorkspace, upgradeWorkspace } from './operations'
-import { Analytics } from '@hcengineering/analytics'
+import { upgradeWorkspace } from './ws-operations'
 
 export type UpgradeErrorHandler = (workspace: BaseWorkspaceInfo, error: any) => Promise<void>
 
-export interface UpgradeOptions {
+export interface WorkspaceOptions {
   errorHandler: (workspace: BaseWorkspaceInfo, error: any) => Promise<void>
   force: boolean
   console: boolean
   logs: string
-  parallel: number
 
   ignore?: string
+  waitTimeout: number
 }
 
-export class UpgradeWorker {
+export class WorkspaceWorker {
+  rateLimit: RateLimiter
   constructor (
-    readonly db: Db,
-    readonly client: MongoClient,
     readonly version: Data<Version>,
     readonly txes: Tx[],
     readonly migrationOperation: [string, MigrateOperation][],
-    readonly productId: string
-  ) {}
+    readonly productId: string,
+    readonly region: string,
+    limit: number,
+    readonly dbUri: string
+  ) {
+    this.rateLimit = new RateLimiter(limit)
+  }
 
   canceled = false
 
@@ -63,7 +68,7 @@ export class UpgradeWorker {
     this.canceled = true
   }
 
-  private async _upgradeWorkspace (ctx: MeasureContext, ws: WorkspaceInfo, opt: UpgradeOptions): Promise<void> {
+  private async _upgradeWorkspace (ctx: MeasureContext, ws: BaseWorkspaceInfo, opt: WorkspaceOptions): Promise<void> {
     if (ws.disabled === true || (opt.ignore ?? '').includes(ws.workspace)) {
       return
     }
@@ -88,14 +93,16 @@ export class UpgradeWorker {
       workspace: ws.workspace
     })
     this.toProcess--
+    const mongoClient = getMongoClient(this.dbUri)
     try {
+      const db = await mongoClient.getClient()
       const version = await upgradeWorkspace(
         ctx,
         this.version,
         this.txes,
         this.migrationOperation,
         this.productId,
-        this.db,
+        db,
         ws.workspaceUrl ?? ws.workspace,
         logger,
         opt.force
@@ -121,70 +128,60 @@ export class UpgradeWorker {
         workspace: ws.workspace
       })
     } finally {
+      mongoClient.close()
       if (!opt.console) {
         ;(logger as FileModelLogger).close()
       }
     }
   }
 
-  async upgradeAll (ctx: MeasureContext, opt: UpgradeOptions): Promise<void> {
-    const workspaces = await ctx.with(
-      'retrieve-workspaces',
-      {},
-      async (ctx) => await listWorkspacesRaw(this.db, this.productId)
-    )
-    workspaces.sort((a, b) => b.lastVisit - a.lastVisit)
-
-    // We need to update workspaces with missing workspaceUrl
-    for (const ws of workspaces) {
-      if (ws.workspaceUrl == null) {
-        const upd: Partial<Workspace> = {
-          workspaceUrl: ws.workspace
-        }
-        if (ws.workspaceName == null) {
-          upd.workspaceName = ws.workspace
-        }
-        await updateWorkspace(this.db, this.productId, ws, upd)
-      }
-    }
-
-    const withError: string[] = []
-    this.toProcess = workspaces.length
-    this.st = Date.now()
-    this.total = workspaces.length
-
-    if (opt.parallel > 1) {
-      const parallel = opt.parallel
-      const rateLimit = new RateLimiter(parallel)
-      ctx.info('parallel upgrade', { parallel })
-
-      for (const it of workspaces) {
-        await rateLimit.add(async () => {
-          try {
-            await ctx.with('do-upgrade', {}, async (ctx) => {
-              await this._upgradeWorkspace(ctx, it, opt)
-            })
-          } catch (err: any) {
-            ctx.error('Failed to update', { err })
-            Analytics.handleError(err)
-          }
+  wakeup: () => void = () => {}
+  async start (ctx: MeasureContext, opt: WorkspaceOptions): Promise<void> {
+    while (true) {
+      const token = generateToken(systemAccountEmail, { name: '-', productId: this.productId }, { service: 'workspace' })
+      const workspace = await ctx.with(
+        'get-pending-workspace',
+        {},
+        async (ctx) =>
+          await getPendingWorkspace(token, this.region, this.version)
+      )
+      if (workspace === undefined) {
+        await this.doSleep(ctx, opt)
+      } else {
+        await this.rateLimit.exec(async () => {
+          await this.doWorkspaceOperation(ctx, workspace, opt)
         })
       }
-      await rateLimit.waitProcessing()
-      ctx.info('Upgrade done')
-    } else {
-      ctx.info('UPGRADE write logs at:', { logs: opt.logs })
-      for (const ws of workspaces) {
-        try {
-          await this._upgradeWorkspace(ctx, ws, opt)
-        } catch (err: any) {
-          ctx.error('Failed to update', { err })
-          Analytics.handleError(err)
-        }
-      }
-      if (withError.length > 0) {
-        ctx.info('Failed workspaces', withError)
-      }
     }
+  }
+
+  private async doWorkspaceOperation (ctx: MeasureContext, workspace: BaseWorkspaceInfo, opt: WorkspaceOptions): Promise<void> {
+    switch (workspace.mode) {
+      case 'creating':
+        // It seem, it stuck on workspace creation on previoous attempt, so we need to delete it first and re-create,
+        break
+      case 'pending-creation':
+        // We need to start workspace creation
+        break
+      case 'upgrading':
+      case 'active':
+        // It seem version upgrade is required, or upgrade is not finished on previoous iteration.
+        await this._upgradeWorkspace(ctx, workspace, opt)
+        break
+      case 'deleting':
+        // Seems we failed to delete, so let's restore deletion.
+        break
+    }
+  }
+
+  private async doSleep (ctx: MeasureContext, opt: WorkspaceOptions): Promise<void> {
+    ctx.info('sleeping for next upcoming request')
+    await new Promise<void>((resolve) => {
+      const to = setTimeout(resolve, opt.waitTimeout) // 30 seconds for next operation, or wakeup event.
+      this.wakeup = () => {
+        clearTimeout(to)
+        resolve()
+      }
+    })
   }
 }

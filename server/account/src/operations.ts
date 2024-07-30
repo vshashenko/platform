@@ -24,7 +24,6 @@ import contact, {
   Person,
   PersonAccount
 } from '@hcengineering/contact'
-import { buildStorageFromConfig, storageConfigFromEnv } from '@hcengineering/server-storage'
 import core, {
   AccountRole,
   BaseWorkspaceInfo,
@@ -35,7 +34,6 @@ import core, {
   getWorkspaceId,
   groupByArray,
   MeasureContext,
-  MeasureMetricsContext,
   RateLimiter,
   Ref,
   roleOrder,
@@ -43,39 +41,17 @@ import core, {
   Tx,
   TxOperations,
   Version,
-  versionToString,
   WorkspaceId,
-  WorkspaceIdWithUrl,
   type Branding
 } from '@hcengineering/core'
-import { consoleModelLogger, MigrateOperation, ModelLogger } from '@hcengineering/model'
+import { MigrateOperation } from '@hcengineering/model'
 import platform, { getMetadata, PlatformError, Severity, Status, translate } from '@hcengineering/platform'
+import { type StorageAdapter } from '@hcengineering/server-core'
 import { decodeToken, generateToken } from '@hcengineering/server-token'
-import toolPlugin, {
-  connect,
-  initializeWorkspace,
-  initModel,
-  updateModel,
-  prepareTools,
-  upgradeModel
-} from '@hcengineering/server-tool'
+import toolPlugin, { connect } from '@hcengineering/server-tool'
 import { pbkdf2Sync, randomBytes } from 'crypto'
 import { Binary, Db, Filter, ObjectId, type MongoClient } from 'mongodb'
 import fetch from 'node-fetch'
-import {
-  DummyFullTextAdapter,
-  Pipeline,
-  PipelineFactory,
-  SessionContextImpl,
-  StorageConfiguration,
-  type StorageAdapter
-} from '@hcengineering/server-core'
-import {
-  createIndexStages,
-  createServerPipeline,
-  registerServerPlugins,
-  registerStringLoaders
-} from '@hcengineering/server-pipeline'
 import { accountPlugin } from './plugin'
 
 const WORKSPACE_COLLECTION = 'workspace'
@@ -107,7 +83,7 @@ export enum EndpointKind {
   External
 }
 
-const getEndpoint = (ctx: MeasureContext, workspaceInfo: Workspace, kind: EndpointKind): string => {
+const getEndpoint = (ctx: MeasureContext, workspaceInfo: WorkspaceInfo, kind: EndpointKind): string => {
   const transactorsUrl = getMetadata(accountPlugin.metadata.Transactors)
   if (transactorsUrl === undefined) {
     throw new Error('Please provide transactor endpoint url')
@@ -121,26 +97,26 @@ const getEndpoint = (ctx: MeasureContext, workspaceInfo: Workspace, kind: Endpoi
     throw new Error('Please provide transactor endpoint url')
   }
 
-  const toTransactor = (line: string): { internalUrl: string, group: string, externalUrl: string } => {
-    const [internalUrl, externalUrl, group] = line.split(';')
-    return { internalUrl, group: group ?? '', externalUrl: externalUrl ?? internalUrl }
+  const toTransactor = (line: string): { internalUrl: string, region: string, externalUrl: string } => {
+    const [internalUrl, externalUrl, region] = line.split(';')
+    return { internalUrl, region: region ?? '', externalUrl: externalUrl ?? internalUrl }
   }
 
-  const groups = groupByArray(endpoints.map(toTransactor), (it) => it.group)
-  let transactors = (groups.get(workspaceInfo.transactor ?? '') ?? [])
+  const groups = groupByArray(endpoints.map(toTransactor), (it) => it.region)
+  let transactors = (groups.get(workspaceInfo.region ?? '') ?? [])
     .map((it) => (kind === EndpointKind.Internal ? it.internalUrl : it.externalUrl))
     .flat()
 
   // This is really bad
   if (transactors.length === 0) {
-    ctx.error('No transactors for group, will use default group', { group: workspaceInfo.transactor })
+    ctx.error('No transactors for group, will use default region', { group: workspaceInfo.region })
   }
   transactors = (groups.get('') ?? [])
     .map((it) => (kind === EndpointKind.Internal ? it.internalUrl : it.externalUrl))
     .flat()
 
   if (transactors.length === 0) {
-    ctx.error('No transactors for default group', { group: workspaceInfo.transactor })
+    ctx.error('No transactors for default region', { group: workspaceInfo.region })
     throw new Error('Please provide transactor endpoint url')
   }
 
@@ -197,7 +173,9 @@ export interface Workspace extends BaseWorkspaceInfo {
   _id: ObjectId
   accounts: ObjectId[]
 
-  transactor?: string // Transactor group name
+  region?: string // Transactor group name
+
+  nextQueueTime?: number
 }
 
 /**
@@ -216,8 +194,8 @@ export interface WorkspaceLoginInfo extends LoginInfo {
   workspace: string
   productId: string
 
-  creating?: boolean
-  createProgress?: number
+  mode: 'pending-creation' | 'creating' | 'upgrading' | 'deleting' | 'active'
+  progress?: number
 }
 
 /**
@@ -455,8 +433,8 @@ export async function selectWorkspace (
       token,
       workspace: workspaceUrl,
       productId,
-      creating: workspaceInfo.creating,
-      createProgress: workspaceInfo.createProgress
+      mode: workspaceInfo.mode,
+      progress: workspaceInfo.progress
     }
   }
 
@@ -487,13 +465,17 @@ export async function selectWorkspace (
       token: generateToken(email, getWorkspaceId(workspaceInfo.workspace, productId), getExtra(accountInfo)),
       workspace: workspaceUrl,
       productId,
-      creating: workspaceInfo.creating,
-      createProgress: workspaceInfo.createProgress
+      mode: workspaceInfo.mode,
+      progress: workspaceInfo.progress
     }
   }
 
   if (workspaceInfo !== null) {
-    if (workspaceInfo.disabled === true && workspaceInfo.creating !== true) {
+    if (
+      workspaceInfo.disabled === true &&
+      workspaceInfo.mode !== 'creating' &&
+      workspaceInfo.mode !== 'pending-creation'
+    ) {
       ctx.error('workspace disabled', { workspaceUrl, email })
       throw new PlatformError(
         new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { workspace: workspaceUrl })
@@ -509,8 +491,8 @@ export async function selectWorkspace (
           token: generateToken(email, getWorkspaceId(workspaceInfo.workspace, productId), getExtra(accountInfo)),
           workspace: workspaceUrl,
           productId,
-          creating: workspaceInfo.creating,
-          createProgress: workspaceInfo.createProgress
+          mode: workspaceInfo.mode,
+          progress: workspaceInfo.progress
         }
         return result
       }
@@ -881,19 +863,6 @@ export async function setWorkspaceDisabled (db: Db, workspaceId: Workspace['_id'
   await db.collection<Workspace>(WORKSPACE_COLLECTION).updateOne({ _id: workspaceId }, { $set: { disabled } })
 }
 
-export async function cleanInProgressWorkspaces (db: Db, productId: string): Promise<void> {
-  const toDelete = (
-    await db
-      .collection<Workspace>(WORKSPACE_COLLECTION)
-      .find(withProductId(productId, { creating: true }))
-      .toArray()
-  ).map((it) => ({ ...it, productId }))
-  const ctx = new MeasureMetricsContext('clean', {})
-  for (const d of toDelete) {
-    await dropWorkspace(ctx, db, productId, null, d.workspace)
-  }
-}
-
 /**
  * @public
  */
@@ -936,12 +905,12 @@ async function generateWorkspaceRecord (
   db: Db,
   email: string,
   productId: string,
-  version: Data<Version>,
   branding: Branding | null,
   workspaceName: string,
   fixedWorkspace?: string
 ): Promise<Workspace> {
-  const coll = db.collection<Omit<Workspace, '_id' | 'endpoint'>>(WORKSPACE_COLLECTION)
+  type WorkspaceData = Omit<Workspace, '_id' | 'endpoint'>
+  const coll = db.collection<WorkspaceData>(WORKSPACE_COLLECTION)
   const brandingKey = branding?.key ?? 'huly'
   if (fixedWorkspace !== undefined) {
     const ws = await coll.find<Workspace>({ workspaceUrl: fixedWorkspace }).toArray()
@@ -950,17 +919,17 @@ async function generateWorkspaceRecord (
         new Status(Severity.ERROR, platform.status.WorkspaceAlreadyExists, { workspace: fixedWorkspace })
       )
     }
-    const data = {
+    const data: WorkspaceData = {
       workspace: fixedWorkspace,
       workspaceUrl: fixedWorkspace,
       productId,
-      version,
+      version: { major: 0, minor: 0, patch: 0 }, // We do not know version until it will be created
       branding: brandingKey,
       workspaceName,
       accounts: [],
       disabled: true,
-      creating: true,
-      createProgress: 0,
+      mode: 'creating',
+      progress: 0,
       createdOn: Date.now(),
       lastVisit: Date.now(),
       createdBy: email
@@ -983,17 +952,17 @@ async function generateWorkspaceRecord (
     }
     const ws = await coll.find<Workspace>({ $or: [{ workspaceUrl }, { workspace }] }).toArray()
     if (ws.length === 0) {
-      const data = {
+      const data: WorkspaceData = {
         workspace,
         workspaceUrl,
         productId,
-        version,
+        version: { major: 0, minor: 0, patch: 0 }, // We do not know version until it will be created,
         branding: brandingKey,
         workspaceName,
         accounts: [],
         disabled: true,
-        creating: true,
-        createProgress: 0,
+        mode: 'creating',
+        progress: 0,
         createdOn: Date.now(),
         lastVisit: Date.now(),
         createdBy: email
@@ -1019,358 +988,151 @@ async function generateWorkspaceRecord (
   }
 }
 
-let searchPromise: Promise<Workspace> | undefined
-
-const rateLimiter = new RateLimiter(parseInt(process.env.RATELIMIT ?? '10'))
+// It always should be one.
+const createQueue = new RateLimiter(1)
 
 /**
  * @public
  */
 export async function createWorkspace (
   ctx: MeasureContext,
-  version: Data<Version>,
-  txes: Tx[],
-  migrationOperation: [string, MigrateOperation][],
   db: Db,
   productId: string,
   branding: Branding | null,
   email: string,
   workspaceName: string,
-  workspace?: string,
-  notifyHandler?: (workspace: Workspace) => void,
-  postInitHandler?: (workspace: Workspace, model: Tx[]) => Promise<void>
-): Promise<{ workspaceInfo: Workspace, err?: any, model?: Tx[] }> {
+  workspace?: string
+): Promise<Workspace> {
   // We need to search for duplicate workspaceUrl
-  await searchPromise
-
   // Safe generate workspace record.
-  searchPromise = generateWorkspaceRecord(db, email, productId, version, branding, workspaceName, workspace)
+  return await createQueue.exec(async () => {
+    return await generateWorkspaceRecord(db, email, productId, branding, workspaceName, workspace)
+  })
+}
 
-  const workspaceInfo = await searchPromise
-
-  notifyHandler?.(workspaceInfo)
+/**
+ * @public
+ */
+export async function updateWorkspaceInfo (
+  ctx: MeasureContext,
+  db: Db,
+  productId: string,
+  branding: Branding | null,
+  token: string,
+  workspaceId: string,
+  event: 'progress' | 'create-done' | 'upgrade-done',
+  progress: number
+): Promise<void> {
+  const workspaceInfo = await getWorkspaceById(db, productId, workspaceId)
+  if (workspaceInfo === null) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { workspace: workspaceId }))
+  }
 
   const wsColl = db.collection<Omit<Workspace, '_id'>>(WORKSPACE_COLLECTION)
-
-  async function updateInfo (ops: Partial<Workspace>): Promise<void> {
-    await wsColl.updateOne({ _id: workspaceInfo._id }, { $set: ops })
-    console.log('update', ops)
-  }
-
-  await updateInfo({ createProgress: 10 })
-
-  return await rateLimiter.exec(async () => {
-    const childLogger = ctx.newChild('createUserWorkspace', {}, { workspace: workspaceInfo.workspace })
-    const ctxModellogger: ModelLogger = {
-      log: (msg, data) => {
-        childLogger.info(msg, data)
-      },
-      error: (msg, data) => {
-        childLogger.error(msg, data)
-      }
-    }
-    const model: Tx[] = []
-    try {
-      const wsUrl: WorkspaceIdWithUrl = {
-        name: workspaceInfo.workspace,
-        productId: workspaceInfo.productId,
-        workspaceName: workspaceInfo.workspaceName ?? '',
-        workspaceUrl: workspaceInfo.workspaceUrl ?? ''
-      }
-
-      const wsId = getWorkspaceId(workspaceInfo.workspace, productId)
-
-      await childLogger.withLog('init-workspace', {}, async (ctx) => {
-        await initModel(ctx, wsId, txes, ctxModellogger, async (value) => {
-          await updateInfo({ createProgress: 10 + Math.round((Math.min(value, 100) / 100) * 10) })
-        })
-      })
-
-      const { mongodbUri } = prepareTools([])
-
-      const storageConfig: StorageConfiguration = storageConfigFromEnv()
-      const storageAdapter = buildStorageFromConfig(storageConfig, mongodbUri)
-
-      try {
-        registerServerPlugins()
-        registerStringLoaders()
-        const factory: PipelineFactory = createServerPipeline(
-          ctx,
-          mongodbUri,
-          {
-            externalStorage: storageAdapter,
-            fullTextUrl: 'http://localost:9200',
-            indexParallel: 0,
-            indexProcessing: 0,
-            rekoniUrl: '',
-            usePassedCtx: true
-          },
-          {
-            fulltextAdapter: {
-              factory: async () => new DummyFullTextAdapter(),
-              url: '',
-              stages: (adapter, storage, storageAdapter, contentAdapter) =>
-                createIndexStages(
-                  ctx.newChild('stages', {}),
-                  wsUrl,
-                  branding,
-                  adapter,
-                  storage,
-                  storageAdapter,
-                  contentAdapter,
-                  0,
-                  0
-                )
-            }
-          }
-        )
-
-        const pipeline = await factory(ctx, wsUrl, true, () => {}, null)
-        const client = new TxOperations(wrapPipeline(ctx, pipeline, wsUrl), core.account.System)
-
-        await updateModel(ctx, wsId, migrationOperation, client, ctxModellogger, async (value) => {
-          await updateInfo({ createProgress: 20 + Math.round((Math.min(value, 100) / 100) * 10) })
-        })
-
-        await initializeWorkspace(ctx, branding, wsUrl, storageAdapter, client, ctxModellogger, async (value) => {
-          await updateInfo({ createProgress: 30 + Math.round((Math.min(value, 100) / 100) * 70) })
-        })
-        await pipeline.close()
-      } finally {
-        await storageAdapter.close()
-      }
-    } catch (err: any) {
-      Analytics.handleError(err)
-      return { workspaceInfo, err, client: null as any }
-    }
-
-    if (postInitHandler !== undefined) {
-      await ctx.withLog('post-handler', {}, async (ctx) => {
-        await postInitHandler?.(workspaceInfo, model)
-      })
-    }
-
-    childLogger.end()
-    // Workspace is created, we need to clear disabled flag.
-    await updateInfo({ createProgress: 100, disabled: false, creating: false })
-    return { workspaceInfo, model }
-  })
-}
-
-function wrapPipeline (ctx: MeasureContext, pipeline: Pipeline, wsUrl: WorkspaceIdWithUrl): Client {
-  const sctx = new SessionContextImpl(
-    ctx,
-    systemAccountEmail,
-    'backup',
-    true,
-    { targets: {}, txes: [] },
-    wsUrl,
-    null,
-    false
-  )
-
-  return {
-    findAll: async (_class, query, options) => {
-      return await pipeline.findAll(sctx, _class, query, options)
-    },
-    findOne: async (_class, query, options) => {
-      return (await pipeline.findAll(sctx, _class, query, { ...options, limit: 1 })).shift()
-    },
-    close: async () => {
-      await pipeline.close()
-    },
-    getHierarchy: () => {
-      return pipeline.storage.hierarchy
-    },
-    getModel: () => {
-      return pipeline.storage.modelDb
-    },
-    searchFulltext: async (query, options) => {
-      return {
-        docs: [],
-        total: 0
-      }
-    },
-    tx: async (tx) => {
-      return await pipeline.tx(sctx, tx)
-    },
-    notify: (...tx) => {}
-  }
-}
-
-/**
- * @public
- */
-export async function upgradeWorkspace (
-  ctx: MeasureContext,
-  version: Data<Version>,
-  txes: Tx[],
-  migrationOperation: [string, MigrateOperation][],
-  productId: string,
-  db: Db,
-  workspaceUrl: string,
-  logger: ModelLogger = consoleModelLogger,
-  forceUpdate: boolean = true,
-  forceIndexes: boolean = false
-): Promise<string> {
-  const ws = await getWorkspaceByUrl(db, productId, workspaceUrl)
-  if (ws === null) {
-    throw new PlatformError(new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { workspace: workspaceUrl }))
-  }
-  if (ws.productId !== productId) {
-    if (productId !== '' || ws.productId !== undefined) {
-      throw new PlatformError(new Status(Severity.ERROR, platform.status.ProductIdMismatch, { productId }))
-    }
-  }
-  const versionStr = versionToString(version)
-
-  if (ws?.version !== undefined && !forceUpdate && versionStr === versionToString(ws.version)) {
-    return versionStr
-  }
-  ctx.info('upgrading', {
-    force: forceUpdate,
-    currentVersion: ws?.version !== undefined ? versionToString(ws.version) : '',
-    toVersion: versionStr,
-    workspace: ws.workspace
-  })
-  await upgradeModel(
-    ctx,
-    getEndpoint(ctx, ws, EndpointKind.Internal),
-    getWorkspaceId(ws.workspace, productId),
-    txes,
-    migrationOperation,
-    logger,
-    false,
-    async (value) => {},
-    forceIndexes
-  )
-
-  await db.collection(WORKSPACE_COLLECTION).updateOne(
-    { _id: ws._id },
+  const nextQueueTime = Date.now() + 30 * 1000
+  await wsColl.updateOne(
+    { _id: workspaceInfo._id },
     {
-      $set: { version }
+      $set: {
+        progress,
+        mode: event !== 'progress' ? workspaceInfo.mode : 'active',
+        nextQueueTime
+      }
     }
   )
-  return versionStr
+}
+
+/**
+ * Will recieve one workspace in pending state, ready for creation/upgrade/etc.
+ *
+ * Workspace will be marked as in use, for 30seconds + timeout, so if no progress will be reported on workspace, it will be scheduled for another executor.
+ */
+export async function getPendingWorkspace (
+  ctx: MeasureContext,
+  db: Db,
+  productId: string,
+  branding: Branding | null,
+  token: string,
+  region: string, // A region requested
+  version: Data<Version> // A workspace version requested, if not match for region, workspace will be returned.
+): Promise<WorkspaceInfo | undefined> {
+  const decodedToken = decodeToken(token)
+  if (decodedToken.extra?.service !== 'workspace') {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, { }))
+  }
+  const wsColl = db.collection<Workspace>(WORKSPACE_COLLECTION)
+
+  const nextQueueTime = Date.now() + 30 * 1000
+  return (
+    (await wsColl.findOneAndUpdate(
+      {
+        productId,
+        region,
+        $or: [{ mode: 'pending-creation' }, { version: { $ne: version } }, { nextQueueTime: { $lt: Date.now() } }]
+      },
+      {
+        $set: {
+          nextQueueTime
+        }
+      },
+      {
+        returnDocument: 'after',
+        sort: {
+          lastVisit: -1 // Use last visit as a priority
+        }
+      }
+    )) ?? undefined
+  )
 }
 
 /**
  * @public
  */
-export const createUserWorkspace =
-  (version: Data<Version>, txes: Tx[], migrationOperation: [string, MigrateOperation][]) =>
-    async (
-      ctx: MeasureContext,
-      db: Db,
-      productId: string,
-      branding: Branding | null,
-      token: string,
-      workspaceName: string
-    ): Promise<LoginInfo> => {
-      const { email } = decodeToken(token)
+export async function createUserWorkspace (
+  ctx: MeasureContext,
+  db: Db,
+  productId: string,
+  branding: Branding | null,
+  token: string,
+  workspaceName: string
+): Promise<LoginInfo> {
+  const { email } = decodeToken(token)
 
-      ctx.info('Creating workspace', { workspaceName, email })
+  ctx.info('Creating workspace', { workspaceName, email })
 
-      const info = await getAccount(db, email)
+  const info = await getAccount(db, email)
 
-      if (info === null) {
-        throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, { account: email }))
-      }
-      if (info.confirmed === false) {
-        throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotConfirmed, { account: email }))
-      }
+  if (info === null) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, { account: email }))
+  }
+  if (info.confirmed === false) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotConfirmed, { account: email }))
+  }
 
-      if (info.lastWorkspace !== undefined && info.admin === false) {
-        if (Date.now() - info.lastWorkspace < 60 * 1000) {
-          throw new PlatformError(
-            new Status(Severity.ERROR, platform.status.WorkspaceRateLimit, { workspace: workspaceName })
-          )
-        }
-      }
-
-      async function doCreate (info: Account, notifyHandler: (workspace: Workspace) => void): Promise<void> {
-        const { workspaceInfo, err } = await createWorkspace(
-          ctx,
-          version,
-          txes,
-          migrationOperation,
-          db,
-          productId,
-          branding,
-          email,
-          workspaceName,
-          undefined,
-          notifyHandler,
-          async (workspace, model) => {
-            const initWS = branding?.initWorkspace ?? getMetadata(toolPlugin.metadata.InitWorkspace)
-            const shouldUpdateAccount = initWS !== undefined
-            const client = await connect(
-              getEndpoint(ctx, workspace, EndpointKind.Internal),
-              getWorkspaceId(workspace.workspace, productId),
-              undefined,
-              {
-                admin: 'true'
-              },
-              model
-            )
-            try {
-              await assignWorkspace(
-                ctx,
-                db,
-                productId,
-                branding,
-                email,
-                workspace.workspace,
-                AccountRole.Owner,
-                undefined,
-                shouldUpdateAccount,
-                client
-              )
-              ctx.info('Creating server side done', { workspaceName, email })
-            } catch (err: any) {
-              Analytics.handleError(err)
-            } finally {
-              await client.close()
-            }
-          }
-        )
-
-        if (err != null) {
-          ctx.error('failed to create workspace', { err, workspaceName, email })
-          // We need to drop workspace, to prevent wrong data usage.
-
-          await db.collection(WORKSPACE_COLLECTION).updateOne(
-            {
-              _id: workspaceInfo._id
-            },
-            { $set: { disabled: true, message: JSON.stringify(err?.message ?? ''), err: JSON.stringify(err) } }
-          )
-          throw err
-        }
-        info.lastWorkspace = Date.now()
-
-        // Update last workspace time.
-        await db.collection(ACCOUNT_COLLECTION).updateOne({ _id: info._id }, { $set: { lastWorkspace: Date.now() } })
-      }
-
-      const workspaceInfo = await new Promise<Workspace>((resolve) => {
-        void doCreate(info, (info: Workspace) => {
-          resolve(info)
-        })
-      })
-
-      await assignWorkspaceRaw(db, { account: info, workspace: workspaceInfo })
-
-      const result = {
-        endpoint: getEndpoint(ctx, workspaceInfo, EndpointKind.External),
-        email,
-        token: generateToken(email, getWorkspaceId(workspaceInfo.workspace, productId), getExtra(info)),
-        productId,
-        workspace: workspaceInfo.workspaceUrl
-      }
-      ctx.info('Creating user side done', { workspaceName, email })
-      return result
+  if (info.lastWorkspace !== undefined && info.admin === false) {
+    if (Date.now() - info.lastWorkspace < 60 * 1000) {
+      throw new PlatformError(
+        new Status(Severity.ERROR, platform.status.WorkspaceRateLimit, { workspace: workspaceName })
+      )
     }
+  }
+  const workspaceInfo = await createWorkspace(ctx, db, productId, branding, email, workspaceName, undefined)
+
+  // Update last workspace time.
+  await db.collection(ACCOUNT_COLLECTION).updateOne({ _id: info._id }, { $set: { lastWorkspace: Date.now() } })
+
+  await assignWorkspaceRaw(db, { account: info, workspace: workspaceInfo })
+
+  const result = {
+    endpoint: getEndpoint(ctx, workspaceInfo, EndpointKind.External),
+    email,
+    token: generateToken(email, getWorkspaceId(workspaceInfo.workspace, productId), getExtra(info)),
+    productId,
+    workspace: workspaceInfo.workspaceUrl
+  }
+  ctx.info('Creating user side done', { workspaceName, email })
+  return result
+}
 
 /**
  * @public
@@ -1453,7 +1215,7 @@ export async function getUserWorkspaces (
       .sort({ lastVisit: -1 })
       .toArray()
   )
-    .filter((it) => it.disabled !== true || it.creating === true)
+    .filter((it) => it.disabled !== true || it.mode !== 'active')
     .map(mapToClientWorkspace)
 }
 
@@ -1498,7 +1260,7 @@ export async function getWorkspaceInfo (
 
   const [ws] = await ctx.with('get-workspace', {}, async () =>
     (await db.collection<Workspace>(WORKSPACE_COLLECTION).find(withProductId(productId, query)).toArray()).filter(
-      (it) => it.disabled !== true || account?.admin === true || it.creating === true
+      (it) => it.disabled !== true || account?.admin === true || it.mode !== 'active'
     )
   )
   if (ws == null) {
@@ -1533,15 +1295,15 @@ async function getWorkspaceAndAccount (
   workspaceUrl: string
 ): Promise<{ account: Account, workspace: Workspace }> {
   const email = cleanEmail(_email)
-  const wsPromise = await getWorkspaceById(db, productId, workspaceUrl)
-  if (wsPromise === null) {
+  const workspace = await getWorkspaceById(db, productId, workspaceUrl)
+  if (workspace === null) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { workspace: workspaceUrl }))
   }
   const account = await getAccount(db, email)
   if (account === null) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, { account: email }))
   }
-  return { account, workspace: wsPromise }
+  return { account, workspace }
 }
 
 /**
@@ -1600,7 +1362,7 @@ export async function createMissingEmployee (
     throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, { account: email }))
   }
 
-  await createPersonAccount(ctx, db, account, productId, wsInfo.workspaceId, AccountRole.Guest)
+  await createPersonAccount(ctx, wsInfo, account, productId, wsInfo.workspaceId, AccountRole.Guest)
 }
 
 /**
@@ -1631,7 +1393,7 @@ export async function assignWorkspace (
   if (workspaceInfo.account !== null) {
     await createPersonAccount(
       ctx,
-      db,
+      workspaceInfo.workspace,
       workspaceInfo.account,
       productId,
       workspaceId,
@@ -1753,7 +1515,7 @@ async function replaceCurrentAccount (
 
 async function createPersonAccount (
   ctx: MeasureContext,
-  db: Db,
+  workspaceInfo: WorkspaceInfo,
   account: Account,
   productId: string,
   workspace: string,
@@ -1763,10 +1525,6 @@ async function createPersonAccount (
   client?: Client,
   personAccountId?: Ref<PersonAccount>
 ): Promise<void> {
-  const workspaceInfo = await getWorkspaceById(db, productId, workspace)
-  if (workspaceInfo == null) {
-    throw new PlatformError(new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { workspace }))
-  }
   const connection =
     client ??
     (await connect(getEndpoint(ctx, workspaceInfo, EndpointKind.Internal), getWorkspaceId(workspace, productId)))
@@ -2444,7 +2202,9 @@ export function getMethods (
     getAccountInfo: wrap(getAccountInfo),
     getWorkspaceInfo: wrap(getWorkspaceInfo),
     createAccount: wrap(createAccount),
-    createWorkspace: wrap(createUserWorkspace(version, txes, migrateOperations)),
+    createWorkspace: wrap(createUserWorkspace),
+    getPendingWorkspace: wrap(getPendingWorkspace),
+    updateWorkspaceInfo: wrap(updateWorkspaceInfo),
     assignWorkspace: wrap(assignWorkspace),
     removeWorkspace: wrap(removeWorkspace),
     leaveWorkspace: wrap(leaveWorkspace),

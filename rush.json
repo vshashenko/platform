@@ -857,6 +857,11 @@
       "shouldPublish": false
     },
     {
+      "packageName": "@hcengineering/workspace-service",
+      "projectFolder": "server/workspace-service",
+      "shouldPublish": false
+    },
+    {
       "packageName": "@hcengineering/collaborator",
       "projectFolder": "server/collaborator",
       "shouldPublish": false
