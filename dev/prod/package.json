@@ -228,6 +228,9 @@
     "@hcengineering/products-assets": "^0.1.0",
     "@hcengineering/products-resources": "^0.1.0",
     "@sentry/svelte": "~7.101.0",
-    "posthog-js": "~1.122.0"
+    "posthog-js": "~1.122.0",
+    "@hcengineering/video": "^0.6.0",
+    "@hcengineering/video-resources": "^0.6.0",
+    "@hcengineering/video-assets": "^0.6.0"
   }
 }

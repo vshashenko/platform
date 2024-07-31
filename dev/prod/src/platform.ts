@@ -60,6 +60,7 @@ import analyticsCollector, {analyticsCollectorId} from '@hcengineering/analytics
 import { uploaderId } from '@hcengineering/uploader'
 
 import { bitrixId } from '@hcengineering/bitrix'
+import { videoId } from '@hcengineering/video'
 
 import '@hcengineering/activity-assets'
 import '@hcengineering/attachment-assets'
@@ -100,6 +101,7 @@ import '@hcengineering/products-assets'
 import '@hcengineering/controlled-documents-assets'
 import '@hcengineering/analytics-collector-assets'
 import '@hcengineering/text-editor-assets'
+import '@hcengineering/video-assets'
 import '@hcengineering/uploader-assets'
 
 import github, { githubId } from '@hcengineering/github'
@@ -218,6 +220,7 @@ function configureI18n(): void {
    addStringsLoader(loveId, async (lang: string) => await import(`@hcengineering/love-assets/lang/${lang}.json`))
    addStringsLoader(printId, async (lang: string) => await import(`@hcengineering/print-assets/lang/${lang}.json`))
    addStringsLoader(analyticsCollectorId, async (lang: string) => await import(`@hcengineering/analytics-collector-assets/lang/${lang}.json`))
+   addStringsLoader(videoId, async (lang: string) => await import(`@hcengineering/video-assets/lang/${lang}.json`))
 }
 
 export async function configurePlatform() {
@@ -349,10 +352,16 @@ export async function configurePlatform() {
   addLocation(telegramId, () => import(/* webpackChunkName: "telegram" */ '@hcengineering/telegram-resources'))
   addLocation(attachmentId, () => import(/* webpackChunkName: "attachment" */ '@hcengineering/attachment-resources'))
   addLocation(gmailId, () => import(/* webpackChunkName: "gmail" */ '@hcengineering/gmail-resources'))
-  addLocation(imageCropperId, () => import(/* webpackChunkName: "image-cropper" */ '@hcengineering/image-cropper-resources'))
+  addLocation(
+    imageCropperId,
+    () => import(/* webpackChunkName: "image-cropper" */ '@hcengineering/image-cropper-resources')
+  )
   addLocation(inventoryId, () => import(/* webpackChunkName: "inventory" */ '@hcengineering/inventory-resources'))
   addLocation(templatesId, () => import(/* webpackChunkName: "templates" */ '@hcengineering/templates-resources'))
-  addLocation(notificationId, () => import(/* webpackChunkName: "notification" */ '@hcengineering/notification-resources'))
+  addLocation(
+    notificationId,
+    () => import(/* webpackChunkName: "notification" */ '@hcengineering/notification-resources')
+  )
   addLocation(tagsId, () => import(/* webpackChunkName: "tags" */ '@hcengineering/tags-resources'))
   addLocation(calendarId, () => import(/* webpackChunkName: "calendar" */ '@hcengineering/calendar-resources'))
   addLocation(diffviewId, () => import(/* webpackChunkName: "diffview" */ '@hcengineering/diffview-resources'))
@@ -377,6 +386,7 @@ export async function configurePlatform() {
   addLocation(loveId, () => import(/* webpackChunkName: "love" */ '@hcengineering/love-resources'))
   addLocation(printId, () => import(/* webpackChunkName: "print" */ '@hcengineering/print-resources'))
   addLocation(textEditorId, () => import(/* webpackChunkName: "text-editor" */ '@hcengineering/text-editor-resources'))
+  addLocation(videoId, () => import(/* webpackChunkName: "video" */ '@hcengineering/video-resources'))
   addLocation(uploaderId, () => import(/* webpackChunkName: "uploader" */ '@hcengineering/uploader-resources'))
 
   setMetadata(client.metadata.FilterModel, true)

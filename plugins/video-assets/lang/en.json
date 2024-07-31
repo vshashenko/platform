@@ -1,0 +1,11 @@
+{
+  "string": {
+    "Video": "Video",
+    "Name": "Name",
+    "URL": "URL",
+    "ConfigLabel": "Videos",
+    "ConfigDescription": "Does video things",
+    "NewRecording": "New Recording",
+    "Resolution": "Video Settings"
+  }
+}

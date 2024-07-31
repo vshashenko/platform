@@ -62,7 +62,7 @@
      * The default value is false to avoid legacy compatibility issues.
      * It is strongly recommended to set strictPeerDependencies=true.
      */
-    "strictPeerDependencies": false,
+    "strictPeerDependencies": false
 
     /**
      * Configures the strategy used to select versions during installation.
@@ -247,14 +247,12 @@
     //   "[^@]+@users\\.noreply\\.github\\.com",
     //   "travis@example\\.org"
     // ],
-
     /**
      * When Rush reports that the address is malformed, the notice can include an example
      * of a recommended email.  Make sure it conforms to one of the allowedEmailRegExps
      * expressions.
      */
     // "sampleEmail": "mrexample@users.noreply.github.com",
-
     /**
      * The commit message to use when committing changes during 'rush publish'.
      *
@@ -263,7 +261,6 @@
      * in the commit message, and then customize Rush's message to contain that string.
      */
     // "versionBumpCommitMessage": "Applying package updates. [skip-ci]",
-
     /**
      * The commit message to use when committing changes during 'rush version'.
      *
@@ -1132,7 +1129,7 @@
       "shouldPublish": false
     },
     {
-    "packageName": "@hcengineering/tags",
+      "packageName": "@hcengineering/tags",
       "projectFolder": "plugins/tags",
       "shouldPublish": true
     },
@@ -1941,7 +1938,7 @@
       "packageName": "@hcengineering/diffview-resources",
       "projectFolder": "plugins/diffview-resources",
       "shouldPublish": false
-    },  
+    },
     {
       "packageName": "@hcengineering/github",
       "projectFolder": "services/github/github",
@@ -2075,6 +2072,26 @@
     {
       "packageName": "@hcengineering/server-analytics-collector-resources",
       "projectFolder": "server-plugins/analytics-collector-resources",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/video",
+      "projectFolder": "plugins/video",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/video-resources",
+      "projectFolder": "plugins/video-resources",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/video-assets",
+      "projectFolder": "plugins/video-assets",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/model-video",
+      "projectFolder": "models/video",
       "shouldPublish": false
     }
   ]

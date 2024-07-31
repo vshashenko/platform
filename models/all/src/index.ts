@@ -99,6 +99,7 @@ import {
   serverDocumentsId,
   createModel as serverDocumentsModel
 } from '@hcengineering/model-server-controlled-documents'
+import video, { videoId, createModel as videoModel } from '@hcengineering/model-video'
 
 import { type Plugin } from '@hcengineering/platform'
 
@@ -392,6 +393,16 @@ export default function buildModel (enabled: string[] = ['*'], disabled: string[
         classFilter: defaultFilter
       }
     ],
+    [
+      videoModel,
+      videoId,
+      {
+        label: video.string.ConfigLabel,
+        description: video.string.ConfigDescription,
+        enabled: true,
+        beta: true,
+        classFilter: defaultFilter
+      }],
 
     [serverCoreModel, serverCoreId],
     [serverAttachmentModel, serverAttachmentId],
