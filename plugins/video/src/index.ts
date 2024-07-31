@@ -19,7 +19,7 @@ import {
   Ref,
   Space
 } from '@hcengineering/core'
-import type { Asset, IntlString, Metadata, Plugin } from '@hcengineering/platform'
+import type { Asset, IntlString, Metadata, Plugin, Resource } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
 import type { AnyComponent } from '@hcengineering/ui'
 import { type Application } from '@hcengineering/model-workbench'
@@ -43,6 +43,9 @@ export default plugin(videoId, {
     Stop: '' as Asset,
     Camera: '' as Asset,
     Settings: '' as Asset
+  },
+  function: {
+    openRecordingOverlay: '' as Resource<() => void>
   },
   component: {
     // NewRecordingHeader: '' as AnyComponent,

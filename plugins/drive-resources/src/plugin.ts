@@ -27,6 +27,7 @@ export default mergeIds(driveId, drive, {
     Rename: '' as IntlString,
     RoleLabel: '' as IntlString,
     Root: '' as IntlString,
-    FileVersions: '' as IntlString
+    FileVersions: '' as IntlString,
+    NewRecording: '' as IntlString
   }
 })

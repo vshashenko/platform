@@ -41,24 +41,13 @@
     "@hcengineering/platform": "^0.6.11",
     "@hcengineering/ui": "^0.6.15",
     "@hcengineering/presentation": "^0.6.3",
-    "@hcengineering/activity": "^0.6.0",
     "svelte": "^4.2.12",
-    "@hcengineering/chunter": "^0.6.20",
-    "@hcengineering/text-editor": "^0.6.0",
-    "@hcengineering/contact": "^0.6.24",
-    "@hcengineering/view": "^0.6.13",
-    "@hcengineering/view-resources": "^0.6.0",
-    "@hcengineering/client": "^0.6.18",
-    "@hcengineering/devmodel": "^0.6.0",
-    "@hcengineering/model": "^0.6.11",
-    "@hcengineering/workbench": "^0.6.16",
     "@hcengineering/video": "^0.6.0",
     "@hcengineering/video-assets": "^0.6.0",
-    "video-stream-merger": "^4.0.1",
-    "lodash": "^4.17.21",
-    "@types/lodash": "^4.17.7",
     "@hcengineering/drive": "^0.6.0",
     "tus-js-client": "~4.1.0",
-    "@hcengineering/uploader": "^0.6.0"
+    "@hcengineering/uploader": "^0.6.0",
+    "@types/lodash": "^4.17.7",
+    "lodash": "^4.17.21"
   }
 }

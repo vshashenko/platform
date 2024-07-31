@@ -14,6 +14,7 @@
 -->
 <script lang="ts">
   import { AccountRole, Ref, getCurrentAccount, hasAccountRole } from '@hcengineering/core'
+  import video from '@hcengineering/video'
   import { type Drive } from '@hcengineering/drive'
   import { createQuery } from '@hcengineering/presentation'
   import { Button, ButtonWithDropdown, IconAdd, IconDropdown, Loading, SelectPopupValueType } from '@hcengineering/ui'
@@ -21,6 +22,8 @@
   import drive from '../plugin'
   import { getFolderIdFromFragment } from '../navigation'
   import { showCreateDrivePopup, showCreateFolderPopup, uploadFilesToDrivePopup } from '../utils'
+  import VideoViewer from '@hcengineering/view-resources/src/components/viewer/VideoViewer.svelte'
+  import { getResource } from '@hcengineering/platform'
 
   export let currentSpace: Ref<Drive> | undefined
   export let currentFragment: string | undefined
@@ -43,40 +46,42 @@
 
   $: parent = getFolderIdFromFragment(currentFragment ?? '') ?? drive.ids.Root
 
-  async function handleDropdownItemSelected (res?: SelectPopupValueType['id']): Promise<void> {
+  async function handleDropdownItemSelected(res?: SelectPopupValueType['id']): Promise<void> {
     if (res === drive.string.CreateDrive) {
       await handleCreateDrive()
     } else if (res === drive.string.CreateFolder) {
       await handleCreateFolder()
     } else if (res === drive.string.UploadFile) {
       await handleUploadFile()
+    } else if (res === drive.string.NewRecording) {
+      console.log('hi')
+      const fn = await getResource(video.function.openRecordingOverlay)
+      fn()
     }
   }
 
-  async function handleCreateDrive (): Promise<void> {
+  async function handleCreateDrive(): Promise<void> {
     await showCreateDrivePopup()
   }
 
-  async function handleCreateFolder (): Promise<void> {
+  async function handleCreateFolder(): Promise<void> {
     await showCreateFolderPopup(currentSpace, parent, true)
   }
 
-  async function handleUploadFile (): Promise<void> {
+  async function handleUploadFile(): Promise<void> {
     if (currentSpace !== undefined) {
       await uploadFilesToDrivePopup(currentSpace, parent)
     }
   }
 
-  const dropdownItems = hasAccountRole(me, AccountRole.User)
-    ? [
-        { id: drive.string.CreateDrive, label: drive.string.CreateDrive, icon: drive.icon.Drive },
-        { id: drive.string.CreateFolder, label: drive.string.CreateFolder, icon: drive.icon.Folder },
-        { id: drive.string.UploadFile, label: drive.string.UploadFile, icon: drive.icon.File }
-      ]
-    : [
-        { id: drive.string.CreateFolder, label: drive.string.CreateFolder, icon: drive.icon.Folder },
-        { id: drive.string.UploadFile, label: drive.string.UploadFile, icon: drive.icon.File }
-      ]
+  const dropdownItems = [
+    hasAccountRole(me, AccountRole.User)
+      ? { id: drive.string.CreateDrive, label: drive.string.CreateDrive, icon: drive.icon.Drive }
+      : null,
+    { id: drive.string.CreateFolder, label: drive.string.CreateFolder, icon: drive.icon.Folder },
+    { id: drive.string.UploadFile, label: drive.string.UploadFile, icon: drive.icon.File },
+    { id: drive.string.NewRecording, label: drive.string.NewRecording, icon: video.icon.Video }
+  ].filter((x) => x !== null)
 </script>
 
 {#if loading}

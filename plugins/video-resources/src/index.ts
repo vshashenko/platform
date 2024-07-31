@@ -16,12 +16,32 @@
 import { type Resources } from '@hcengineering/platform'
 
 import NewRecordingButton from './components/NewRecordingButton.svelte'
-// import CreateRecording from './components/CreateRecording.svelte'
+import RecordingPopup from './components/RecordingPopup.svelte'
+import { showPopup } from '@hcengineering/ui'
 
 export default async (): Promise<Resources> => ({
   component: {
-    // NewRecordingHeader,
-    // CreateRecording
     NewRecordingButton
+  },
+  function: {
+    openRecordingOverlay
   }
 })
+
+export function openRecordingOverlay (): void {
+  showPopup(
+    RecordingPopup,
+    {},
+    'movable',
+    async (result) => {
+      console.log('popup closed with result=', result)
+    },
+    async (res) => {
+      console.log('popup updated with res=', res)
+    },
+    // todo: We need this popup to exist no matter where you navigate in the platform.
+    // currently it goes away if you switch plugin apps.
+    // todo: popup should start in bottom-right hand corner
+    { category: 'popup', overlay: false }
+  )
+}
