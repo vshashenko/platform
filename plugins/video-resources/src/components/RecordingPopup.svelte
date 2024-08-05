@@ -1,13 +1,10 @@
 <script lang="ts">
   import { Button, ButtonKind, ButtonSize, closePopup, Row, showPopup } from '@hcengineering/ui'
-  import ui from '@hcengineering/ui'
-  import ButtonGroup from '@hcengineering/ui/src/components/ButtonGroup.svelte'
-  import ErrorPopup from '@hcengineering/ui/src/components/ErrorPopup.svelte'
-  import Grid from '@hcengineering/ui/src/components/Grid.svelte'
-  import Close from '@hcengineering/ui/src/components/icons/Close.svelte'
   import video from '@hcengineering/video'
   import { defaultStreamOptions, MediaStreamer } from '../stream'
-  import { AddStreamOptions, ConstructorOptions, VideoStreamMerger } from 'video-stream-merger'
+  import { VideoPopupCategory } from '../index'
+
+  let allowCamera = true
 
   const btnProps = {
     kind: 'icon' as ButtonKind,
@@ -65,7 +62,7 @@
   function onClose() {
     console.log('onClose')
     stopRecording(true)
-    closePopup()
+    closePopup(VideoPopupCategory)
   }
 
   async function record() {
@@ -81,22 +78,17 @@
 </script>
 
 <div class="container">
-  <!-- svelte-ignore a11y-media-has-caption -->
-  <video bind:this={videoEl} class="video" controls={false} muted={true}></video>
+  {#if allowCamera}
+    <!-- svelte-ignore a11y-media-has-caption -->
+    <video bind:this={videoEl} class="video" controls={false} muted={true}></video>
+  {/if}
   <div class="buttons">
     {#if !recording}
       <Button icon={video.icon.Record} on:click={record} {...btnProps} />
     {:else}
       <Button icon={video.icon.Stop} on:click={() => stopRecording(false)} {...btnProps} />
     {/if}
-    <Button
-      icon={video.icon.Settings}
-      on:click={() => {
-        alert('todo: settings popup')
-      }}
-      {...btnProps}
-    />
-    <Button icon={Close} on:click={onClose} {...btnProps} />
+    <Button icon={video.icon.Cancel} on:click={onClose} {...btnProps} />
   </div>
 </div>
 
@@ -106,14 +98,22 @@
     width: 150px;
     height: 150px;
     background-color: black;
+    outline: 2px solid var(--theme-dialog-border-color);
   }
   .buttons {
     display: flex;
-    width: 100%;
+    width: fit-content;
     justify-content: center;
+    align-self: center;
+    background-color: var(--theme-dialog-background-color);
+    border-radius: var(--large-BorderRadius);
+    margin-top: 0.5rem;
+    padding: 0.25rem;
+    border: 1px solid var(--theme-dialog-border-color);
   }
   .container {
     display: flex;
     flex-direction: column;
+    margin: 1rem;
   }
 </style>

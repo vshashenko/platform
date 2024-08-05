@@ -42,7 +42,8 @@ export default plugin(videoId, {
     Record: '' as Asset,
     Stop: '' as Asset,
     Camera: '' as Asset,
-    Settings: '' as Asset
+    Settings: '' as Asset,
+    Cancel: '' as Asset,
   },
   function: {
     openRecordingOverlay: '' as Resource<() => void>

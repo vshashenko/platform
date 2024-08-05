@@ -54,7 +54,6 @@
     } else if (res === drive.string.UploadFile) {
       await handleUploadFile()
     } else if (res === drive.string.NewRecording) {
-      console.log('hi')
       const fn = await getResource(video.function.openRecordingOverlay)
       fn()
     }

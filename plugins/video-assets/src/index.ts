@@ -22,5 +22,6 @@ loadMetadata(video.icon, {
   Record: `${icons}#record`,
   Stop: `${icons}#stop`,
   Camera: `${icons}#camera`,
-  Settings: `${icons}#settings`
+  Settings: `${icons}#settings`,
+  Cancel: `${icons}#cancel`
 })

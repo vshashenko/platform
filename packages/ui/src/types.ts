@@ -19,6 +19,7 @@ import type {
   /* Metadata, Plugin, plugin, */ Resource /*, Service */
 } from '@hcengineering/platform'
 import { /* getContext, */ type ComponentType } from 'svelte'
+import _ from 'lodash'
 
 /**
  * Describe a browser URI location parsed to path, query and fragment.
@@ -237,7 +238,18 @@ export function isPopupPosAlignment (x: any): x is PopupPosAlignment {
   return typeof x === 'string' && (posAlignment as typeof posAlignment).includes(x as PopupPosAlignment)
 }
 
-export type PopupAlignment = PopupPosAlignment | PopupPositionElement | null
+export interface CustomPosAlignment {
+  options: PopupOptions['props']
+  movable?: boolean
+}
+export function isCustomPosAlignment (x: any): x is CustomPosAlignment {
+  const opts = Object.keys((x.options as CustomPosAlignment['options'] ?? {}))
+  const optsOk = _.reduce(opts, (prev: boolean, next: string) => { return (PopupPropItems as readonly string[]).includes(next) && prev }, true)
+
+  return typeof x === 'object' && 'options' in x && optsOk
+}
+
+export type PopupAlignment = CustomPosAlignment | PopupPosAlignment | PopupPositionElement | null
 
 export type TooltipAlignment = 'top' | 'bottom' | 'left' | 'right'
 export type VerticalAlignment = 'top' | 'bottom'
@@ -329,8 +341,11 @@ export interface DropdownIntlItem {
   keys?: string[]
 }
 
+export const PopupPropItems = ['top', 'bottom', 'left', 'right', 'minWidth', 'width', 'maxWidth', 'minHeight', 'maxHeight', 'height', 'transform'] as const
+export type PopupPropItem = typeof PopupPropItems[number]
+
 export interface PopupOptions {
-  props: Record<string, string | number>
+  props: Partial<Record<PopupPropItem, string | number>>
   showOverlay: boolean
   direction: string
   fullSize?: boolean

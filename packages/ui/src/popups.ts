@@ -1,15 +1,16 @@
 import { getResource } from '@hcengineering/platform'
 import { type ComponentType } from 'svelte'
 import { derived, get } from 'svelte/store'
-import type {
-  AnyComponent,
-  AnySvelteComponent,
-  DeviceOptions,
-  HorizontalAlignment,
-  PopupAlignment,
-  PopupOptions,
-  PopupPositionElement,
-  VerticalAlignment
+import {
+  isCustomPosAlignment,
+  type AnyComponent,
+  type AnySvelteComponent,
+  type DeviceOptions,
+  type HorizontalAlignment,
+  type PopupAlignment,
+  type PopupOptions,
+  type PopupPositionElement,
+  type VerticalAlignment
 } from './types'
 
 import { Analytics } from '@hcengineering/analytics'
@@ -260,13 +261,16 @@ export function fitPopupElement (
   clientHeight?: number
 ): PopupOptions {
   let show = true
-  const newProps: Record<string, string | number> = {}
+
+  const newProps: PopupOptions['props'] = {}
   if (element != null) {
     show = false
     newProps.left = newProps.right = newProps.top = newProps.bottom = ''
     newProps.maxHeight = newProps.height = ''
     newProps.maxWidth = newProps.width = newProps.minWidth = ''
-    if (typeof element !== 'string') {
+    if (isCustomPosAlignment(element)) {
+      Object.assign(newProps, element.options)
+    } else if (typeof element !== 'string') {
       const result = fitPopupPositionedElement(modalHTML, element, newProps)
       // applyStyle(newProps, modalHTML)
       return result

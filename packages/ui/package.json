@@ -47,7 +47,9 @@
     "emoji-regex": "^10.1.0",
     "date-fns": "^2.30.0",
     "date-fns-tz": "^2.0.0",
-    "@hcengineering/analytics": "^0.6.0"
+    "@hcengineering/analytics": "^0.6.0",
+    "lodash": "^4.17.21",
+    "@types/lodash": "^4.17.7"
   },
   "repository": "https://github.com/hcenginneing/anticrm",
   "publishConfig": {

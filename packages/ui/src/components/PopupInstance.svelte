@@ -15,7 +15,7 @@
 -->
 <script lang="ts">
   import { onMount } from 'svelte'
-  import { deviceOptionsStore as deviceInfo, resizeObserver, testing } from '..'
+  import { deviceOptionsStore as deviceInfo, isCustomPosAlignment, resizeObserver, testing } from '..'
   import { CompAndProps, fitPopupElement, pin } from '../popups'
   import type { AnySvelteComponent, DeviceOptions, PopupAlignment, PopupOptions, PopupPositionElement } from '../types'
 
@@ -30,6 +30,8 @@
   export let close: () => void
   export let contentPanel: HTMLElement | undefined
   export let popup: CompAndProps
+
+  const movable = isCustomPosAlignment(element) ? element.movable : element === 'movable'
 
   // We should not update props after popup is created using standard mechanism,
   // since they could be used, and any show will update them
@@ -76,17 +78,17 @@
 
   $: document.body.style.cursor = drag ? 'all-scroll' : 'default'
 
-  function _update (result: any): void {
+  function _update(result: any): void {
     if (onUpdate !== undefined) onUpdate(result)
   }
 
-  function _close (result: any): void {
+  function _close(result: any): void {
     if (onClose !== undefined) onClose(result)
     overlay = false
     close()
   }
 
-  function escapeClose (): void {
+  function escapeClose(): void {
     if (componentInstance?.canClose) {
       if (!componentInstance.canClose()) return
     }
@@ -104,7 +106,7 @@
       options.props.maxHeight = '100vh'
       if (!modalHTML.classList.contains('fullsize')) modalHTML.classList.add('fullsize')
     } else {
-      if (element !== 'movable' || options?.props?.top === undefined || options?.props?.top === '') {
+      if (!movable || options?.props?.top === undefined || options?.props?.top === '') {
         options = fitPopupElement(modalHTML, device, element, contentPanel, clientWidth, clientHeight)
       }
       if (modalHTML.classList.contains('fullsize')) modalHTML.classList.remove('fullsize')
@@ -112,7 +114,7 @@
     options.fullSize = fullSize
   }
 
-  function handleKeydown (ev: KeyboardEvent) {
+  function handleKeydown(ev: KeyboardEvent) {
     if (ev.key === 'Escape' && is && top) {
       ev.preventDefault()
       ev.stopPropagation()
@@ -155,12 +157,12 @@
   let notFit: number = 0
   let locked: boolean = false
 
-  const windowSize: { width: number, height: number } = { width: 0, height: 0 }
-  const dragParams: { offsetX: number, offsetY: number } = { offsetX: 0, offsetY: 0 }
+  const windowSize: { width: number; height: number } = { width: 0, height: 0 }
+  const dragParams: { offsetX: number; offsetY: number } = { offsetX: 0, offsetY: 0 }
   let popupParams: PopupParams = { x: 0, y: 0, width: 0, height: 0 }
 
-  const updatedPopupParams = (pp: { x: number, y: number, width: number, height: number }): void => {
-    if (pp.width === 0 || pp.height === 0 || element !== 'movable') return
+  const updatedPopupParams = (pp: { x: number; y: number; width: number; height: number }): void => {
+    if (pp.width === 0 || pp.height === 0 || !movable) return
     options.props.left = `${pp.x}px`
     options.props.right = ''
     options.props.top = `${pp.y}px`
@@ -168,8 +170,8 @@
   }
   $: updatedPopupParams(popupParams)
 
-  function mouseDown (e: MouseEvent & { currentTarget: EventTarget & HTMLDivElement }): void {
-    if (element !== 'movable') return
+  function mouseDown(e: MouseEvent & { currentTarget: EventTarget & HTMLDivElement }): void {
+    if (!movable) return
     const rect = e.currentTarget.getBoundingClientRect()
     popupParams = { x: rect.left, y: rect.top, width: rect.width, height: rect.height }
     dragParams.offsetX = e.clientX - rect.left
@@ -179,8 +181,8 @@
     window.addEventListener('mouseup', mouseUp)
   }
 
-  function mouseMove (e: MouseEvent): void {
-    if (element !== 'movable' && !drag) return
+  function mouseMove(e: MouseEvent): void {
+    if (!movable && !drag) return
     let newTop = e.clientY - dragParams.offsetY
     let newLeft = e.clientX - dragParams.offsetX
     if (newTop < WINDOW_PADDING) newTop = WINDOW_PADDING
@@ -194,13 +196,13 @@
     popupParams = { ...popupParams, x: newLeft, y: newTop }
   }
 
-  function mouseUp (): void {
+  function mouseUp(): void {
     drag = false
     window.removeEventListener('mousemove', mouseMove)
     window.removeEventListener('mouseup', mouseUp)
   }
 
-  function checkSize (): void {
+  function checkSize(): void {
     const rect = modalHTML.getBoundingClientRect()
     const newParams: PopupParams = { x: rect.left, y: rect.top, width: rect.width, height: rect.height }
     if (popupParams.width === 0 && popupParams.height === 0) popupParams = newParams
@@ -241,7 +243,7 @@
     locked = false
   }
 
-  export function fitPopupInstance (): void {
+  export function fitPopupInstance(): void {
     if (modalHTML) {
       fitPopup(modalHTML, element, contentPanel)
     }
@@ -259,7 +261,7 @@
 <svelte:window
   on:resize={() => {
     if (modalHTML) fitPopup(modalHTML, element, contentPanel)
-    if (element === 'movable' && !locked) {
+    if (movable && !locked) {
       locked = true
       if (options.props.right !== '') {
         const rect = modalHTML.getBoundingClientRect()
@@ -320,7 +322,7 @@
     on:changeContent={(ev) => {
       fitPopup(modalHTML, element, contentPanel)
       if (ev.detail?.notFit !== undefined) notFit = ev.detail.notFit
-      if (element === 'movable' && showing !== false) checkSize()
+      if (movable && showing !== false) checkSize()
     }}
   />
 </div>

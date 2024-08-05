@@ -1802,9 +1802,6 @@ dependencies:
   uuid:
     specifier: ^8.3.2
     version: 8.3.2
-  video-stream-merger:
-    specifier: ^4.0.1
-    version: 4.0.1
   web-push:
     specifier: ~3.6.7
     version: 3.6.7
@@ -25667,7 +25664,7 @@ packages:
     dev: false
 
   file:projects/drive-resources.tgz(@types/node@20.11.19)(esbuild@0.20.1)(postcss-load-config@4.0.2)(postcss@8.4.35)(ts-node@10.9.2):
-    resolution: {integrity: sha512-1saL40JzcAtJ3+B+oqfEjKbAjQk07/2aosafiSMPav5k2h42odFfk0le2HQDufXLyviMVGdUJOyP0HJeaaqyXQ==, tarball: file:projects/drive-resources.tgz}
+    resolution: {integrity: sha512-ng21f3sihgYGmP/dO4fdfoVj+tIHS5FiJRyWn8D6BWOyI1qHZ1ra6p/1CK8JuzQfQGFUB1zCH5T/PznTwvvWoQ==, tarball: file:projects/drive-resources.tgz}
     id: file:projects/drive-resources.tgz
     name: '@rush-temp/drive-resources'
     version: 0.0.0
@@ -25713,7 +25710,7 @@ packages:
     dev: false
 
   file:projects/drive.tgz(@types/node@20.11.19)(esbuild@0.20.1)(ts-node@10.9.2):
-    resolution: {integrity: sha512-JU2FWuIDY2pql3EPaQbuNVnrC4p6n/uo9mSV/TeeFc9ufwIzwHhmsLGI195bxHTAqMbKv9jsNckaNj0TrtOSOw==, tarball: file:projects/drive.tgz}
+    resolution: {integrity: sha512-YlXIFy/UGs3kwJsvkW5Z/e1oLRmIWDBC4wAALvw/QWpysgCJ+gXWIly3MQzB8Q+KQ1vB7a8XaRDoXjkR94KbcQ==, tarball: file:projects/drive.tgz}
     id: file:projects/drive.tgz
     name: '@rush-temp/drive'
     version: 0.0.0
@@ -33958,12 +33955,13 @@ packages:
     dev: false
 
   file:projects/ui.tgz(@types/node@20.11.19)(esbuild@0.20.1)(postcss-load-config@4.0.2)(postcss@8.4.35)(ts-node@10.9.2):
-    resolution: {integrity: sha512-WtSFJW84fNe+3lwzv2a8CRmyYIsY8B6HHJwg3YKLd7jWHF4T8hYIf892hAEv7kvh/vrZ7elq8E8b1znmCNd7Sw==, tarball: file:projects/ui.tgz}
+    resolution: {integrity: sha512-4mIQEpyvIlgGRwyrkiYMxxqAwqLjN/CjqT5eO6QYvU/2NS2FWMinaT2sQle0eVO4RcrBLxVRJ5wz03pafYoSJg==, tarball: file:projects/ui.tgz}
     id: file:projects/ui.tgz
     name: '@rush-temp/ui'
     version: 0.0.0
     dependencies:
       '@types/jest': 29.5.12
+      '@types/lodash': 4.17.7
       '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0)(eslint@8.56.0)(typescript@5.3.3)
       '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.3.3)
       autolinker: 4.0.0
@@ -33979,6 +33977,7 @@ packages:
       fast-equals: 5.0.1
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
       just-clone: 6.2.0
+      lodash: 4.17.21
       prettier: 3.2.5
       prettier-plugin-svelte: 3.2.2(prettier@3.2.5)(svelte@4.2.12)
       sass: 1.71.1
@@ -34169,7 +34168,7 @@ packages:
     dev: false
 
   file:projects/video-resources.tgz(@types/node@20.11.19)(esbuild@0.20.1)(postcss-load-config@4.0.2)(postcss@8.4.35)(ts-node@10.9.2):
-    resolution: {integrity: sha512-4GckSRHScMgKmNPXuRIXlbI1zWkQAcsNZiUpDbapoR5esSI87sTUjYrJk1tkaovZ6YN1lFp6Kp/COwVdPfZ7tA==, tarball: file:projects/video-resources.tgz}
+    resolution: {integrity: sha512-G2KFAQv6tE5D82hjxVBffsfrJOM5k20OMiu0EpsEQ7RDn/ubXso0iDLlTBVKDJWzinY63wcF4+eQZSJfQaAxzA==, tarball: file:projects/video-resources.tgz}
     id: file:projects/video-resources.tgz
     name: '@rush-temp/video-resources'
     version: 0.0.0
