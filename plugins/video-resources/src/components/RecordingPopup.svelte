@@ -2,7 +2,6 @@
   import { Button, ButtonKind, ButtonSize, closePopup, Row, showPopup } from '@hcengineering/ui'
   import video from '@hcengineering/video'
   import { defaultStreamOptions, MediaStreamer } from '../stream'
-  import { VideoPopupCategory } from '../index'
 
   let allowCamera = true
 
@@ -60,9 +59,8 @@
   }
 
   function onClose() {
-    console.log('onClose')
     stopRecording(true)
-    closePopup(VideoPopupCategory)
+    closePopup('recordingPopup')
   }
 
   async function record() {

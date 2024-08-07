@@ -31,6 +31,7 @@ export interface CompAndProps {
     overlay: boolean
     fixed?: boolean
     refId?: string
+    persistent?: boolean
   }
   dock?: boolean
 
@@ -93,6 +94,7 @@ export function showPopup (
     overlay: boolean
     fixed?: boolean
     refId?: string
+    persistent?: boolean
   } = {
     category: 'popup',
     overlay: true
@@ -149,7 +151,8 @@ export function closePopup (category?: string): void {
       popups = popups.filter((p) => p.type === 'popup' && p.options.category !== category)
     } else {
       for (let i = popups.length - 1; i >= 0; i--) {
-        if (popups[i].type !== 'popup') continue
+        const persistent = (popups[i] as CompAndProps)?.options?.persistent ?? false
+        if (popups[i].type !== 'popup' || persistent) continue
         if ((popups[i] as CompAndProps).options.fixed !== true) {
           const isClosing = (popups[i] as CompAndProps).closing ?? false
           if (popups[i].type === 'popup') {

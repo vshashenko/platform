@@ -20,8 +20,6 @@ import RecordingPopup from './components/RecordingPopup.svelte'
 import { showPopup } from '@hcengineering/ui'
 import RecordingSettings from './components/RecordingSettings.svelte'
 
-export const VideoPopupCategory = 'recordingPopup'
-
 export default async (): Promise<Resources> => ({
   component: {
     NewRecordingButton
@@ -30,6 +28,16 @@ export default async (): Promise<Resources> => ({
     openRecordingOverlay
   }
 })
+
+export const recordingEvents = [
+  'beginRecordingCountdown',
+  'beginRecording',
+  'pauseRecording',
+  'stopRecording',
+  'cancelRecording'
+
+] as const
+export type recordingEvent = typeof recordingEvents[number]
 
 export function openRecordingOverlay (): void {
   showPopup(
@@ -43,15 +51,12 @@ export function openRecordingOverlay (): void {
       }
     },
     undefined, undefined,
-    // todo: We need this popup to exist no matter where you navigate in the platform.
-    // currently it goes away if you switch plugin apps.
-    // todo: popup should start in bottom-right hand corner
-    { category: VideoPopupCategory, overlay: false }
+    { category: 'recordingPopup', overlay: false, persistent: true }
   )
   showPopup(RecordingSettings,
     {},
     'right',
     undefined, undefined,
-    { category: VideoPopupCategory, overlay: false }
+    { category: 'recordingSettings', overlay: true }
   )
 }

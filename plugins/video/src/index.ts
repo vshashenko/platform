@@ -22,7 +22,6 @@ import {
 import type { Asset, IntlString, Metadata, Plugin, Resource } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
 import type { AnyComponent } from '@hcengineering/ui'
-import { type Application } from '@hcengineering/model-workbench'
 
 export interface Video extends Doc {
   name: string
@@ -43,14 +42,12 @@ export default plugin(videoId, {
     Stop: '' as Asset,
     Camera: '' as Asset,
     Settings: '' as Asset,
-    Cancel: '' as Asset,
+    Cancel: '' as Asset
   },
   function: {
     openRecordingOverlay: '' as Resource<() => void>
   },
   component: {
-    // NewRecordingHeader: '' as AnyComponent,
-    // CreateNewRecording: '' as AnyComponent
     NewRecordingButton: '' as AnyComponent
   },
   metadata: {
@@ -68,8 +65,5 @@ export default plugin(videoId, {
     ConfigDescription: '' as IntlString,
     NewRecording: '' as IntlString,
     VideoSettings: '' as IntlString
-  },
-  app: {
-    Videos: '' as Ref<Application>
   }
 })
