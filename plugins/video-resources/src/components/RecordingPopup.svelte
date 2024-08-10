@@ -2,6 +2,32 @@
   import { Button, ButtonKind, ButtonSize, closePopup, Row, showPopup } from '@hcengineering/ui'
   import video from '@hcengineering/video'
   import { defaultStreamOptions, MediaStreamer } from '../stream'
+  import { defaultRecordingOptions, RecordingOptions, RecordingState } from '..'
+  import { onDestroy } from 'svelte'
+  import { Writable } from 'svelte/store'
+
+  export let recordingState: Writable<RecordingState>
+
+  let options = defaultRecordingOptions
+  recordingState.subscribe((val) => {
+    console.log('UPDATE', val)
+    options = val.options ?? options
+    const state = val.state
+    if (state === 'init') {
+      // make sure all local state is set to initial status
+    } else if (state === 'countdown') {
+      // initialize countdown
+    } else if (state === 'recording') {
+      record()
+    } else if (state === 'paused') {
+      // todo
+    } else if (state === 'cancelled') {
+      onClose()
+    } else if (state === 'finished') {
+      // redirect to completed recording if applicable.
+      // may open in new tab
+    }
+  })
 
   let allowCamera = true
 
@@ -63,6 +89,8 @@
     closePopup('recordingPopup')
   }
 
+  onDestroy(onClose)
+
   async function record() {
     const share = await navigator.mediaDevices.getDisplayMedia({
       video: true,
@@ -75,14 +103,20 @@
   }
 </script>
 
-<div class="container">
+<div class="container" on:startRecording={record}>
   {#if allowCamera}
     <!-- svelte-ignore a11y-media-has-caption -->
     <video bind:this={videoEl} class="video" controls={false} muted={true}></video>
   {/if}
   <div class="buttons">
     {#if !recording}
-      <Button icon={video.icon.Record} on:click={record} {...btnProps} />
+      <Button
+        icon={video.icon.Record}
+        on:click={() => {
+          record()
+        }}
+        {...btnProps}
+      />
     {:else}
       <Button icon={video.icon.Stop} on:click={() => stopRecording(false)} {...btnProps} />
     {/if}

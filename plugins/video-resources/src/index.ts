@@ -19,6 +19,7 @@ import NewRecordingButton from './components/NewRecordingButton.svelte'
 import RecordingPopup from './components/RecordingPopup.svelte'
 import { showPopup } from '@hcengineering/ui'
 import RecordingSettings from './components/RecordingSettings.svelte'
+import { writable } from 'svelte/store'
 
 export default async (): Promise<Resources> => ({
   component: {
@@ -29,20 +30,37 @@ export default async (): Promise<Resources> => ({
   }
 })
 
-export const recordingEvents = [
-  'beginRecordingCountdown',
-  'beginRecording',
-  'pauseRecording',
-  'stopRecording',
-  'cancelRecording'
-
+export const recordingStates = [
+  'init',
+  'countdown',
+  'recording',
+  'paused',
+  'cancelled',
+  'finished'
 ] as const
-export type recordingEvent = typeof recordingEvents[number]
+export interface RecordingOptions {
+  countdown: boolean
+}
+export const defaultRecordingOptions: RecordingOptions = {
+  countdown: true
+}
+export interface RecordingState {
+  state: typeof recordingStates[number]
+  options?: RecordingOptions
+}
+
+export const defaultRecordingState: RecordingState = {
+  state: 'init',
+  options: defaultRecordingOptions
+}
+
+const recordingState = writable<RecordingState>()
 
 export function openRecordingOverlay (): void {
+  recordingState.set(defaultRecordingState)
   showPopup(
     RecordingPopup,
-    {},
+    { recordingState },
     {
       movable: true,
       options: {
@@ -54,7 +72,7 @@ export function openRecordingOverlay (): void {
     { category: 'recordingPopup', overlay: false, persistent: true }
   )
   showPopup(RecordingSettings,
-    {},
+    { recordingState },
     'right',
     undefined, undefined,
     { category: 'recordingSettings', overlay: true }
