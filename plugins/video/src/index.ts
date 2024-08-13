@@ -64,6 +64,9 @@ export default plugin(videoId, {
     ConfigLabel: '' as IntlString,
     ConfigDescription: '' as IntlString,
     NewRecording: '' as IntlString,
-    VideoSettings: '' as IntlString
+    VideoSettings: '' as IntlString,
+    Camera: '' as IntlString,
+    Microphone: '' as IntlString,
+    ShareType: '' as IntlString
   }
 })

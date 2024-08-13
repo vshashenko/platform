@@ -8,13 +8,15 @@
 
   export let recordingState: Writable<RecordingState>
 
-  let options = defaultRecordingOptions
+  $: options = defaultRecordingOptions
   recordingState.subscribe((val) => {
     console.log('UPDATE', val)
-    options = val.options ?? options
     const state = val.state
-    if (state === 'init') {
-      // make sure all local state is set to initial status
+    if (state === 'updateOptions') {
+      options = val.options ?? options
+      recordingState.set(new RecordingState('init'))
+    } else if (state === 'init') {
+      // do nothing
     } else if (state === 'countdown') {
       // initialize countdown
     } else if (state === 'recording') {
@@ -103,7 +105,7 @@
   }
 </script>
 
-<div class="container" on:startRecording={record}>
+<div class="container">
   {#if allowCamera}
     <!-- svelte-ignore a11y-media-has-caption -->
     <video bind:this={videoEl} class="video" controls={false} muted={true}></video>

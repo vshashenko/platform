@@ -31,6 +31,8 @@ export default async (): Promise<Resources> => ({
 })
 
 export const recordingStates = [
+  // hacky way to send an event
+  'updateOptions',
   'init',
   'countdown',
   'recording',
@@ -38,21 +40,41 @@ export const recordingStates = [
   'cancelled',
   'finished'
 ] as const
+
+export const shareTypes = [
+  'fullScreen',
+  'thisWindow',
+  'thisTab',
+  'cameraOnly'
+] as const
+export type ShareType = typeof shareTypes[number]
 export interface RecordingOptions {
   countdown: boolean
+  shareType: ShareType
+  microphone: string
+  camera: string
 }
 export const defaultRecordingOptions: RecordingOptions = {
-  countdown: true
+  countdown: true,
+  shareType: 'fullScreen',
+  microphone: 'default',
+  camera: 'default'
 }
-export interface RecordingState {
+export class RecordingState {
   state: typeof recordingStates[number]
   options?: RecordingOptions
+  id: number
+  // smh there should be a better way to do this
+  static globalId: number = 0
+
+  constructor (state: typeof recordingStates[number], options?: RecordingOptions) {
+    this.state = state
+    this.options = options
+    this.id = RecordingState.globalId++
+  }
 }
 
-export const defaultRecordingState: RecordingState = {
-  state: 'init',
-  options: defaultRecordingOptions
-}
+export const defaultRecordingState = new RecordingState('init')
 
 const recordingState = writable<RecordingState>()
 

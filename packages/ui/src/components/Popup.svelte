@@ -22,7 +22,7 @@
 
   const instances: PopupInstance[] = []
 
-  export function fitPopupInstance (): void {
+  export function fitPopupInstance(): void {
     instances.forEach((p) => p.fitPopupInstance())
   }
 

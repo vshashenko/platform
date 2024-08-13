@@ -3,9 +3,13 @@
     "Video": "Video",
     "Name": "Name",
     "URL": "URL",
-    "ConfigLabel": "Videos",
-    "ConfigDescription": "Does video things",
     "NewRecording": "New Recording",
-    "Resolution": "Video Settings"
+    "StartRecording": "Start Recording",
+    "RecordingSettings": "Recording Settings",
+    "Countdown": "Countdown",
+    "Default": "Default",
+    "ShareType": "Share Type",
+    "Microphone": "Microphone",
+    "Camera": "Camera"
   }
 }
