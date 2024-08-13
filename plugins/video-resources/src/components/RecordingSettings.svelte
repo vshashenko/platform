@@ -1,26 +1,25 @@
 <script lang="ts">
   import Card from '@hcengineering/presentation/src/components/Card.svelte'
   import video from '@hcengineering/video'
+  import { closePopup, DropdownLabels, DropdownTextItem, ToggleWithLabel } from '@hcengineering/ui'
   import {
-    Button,
-    ButtonKind,
-    ButtonSize,
-    closePopup,
-    DropdownLabels,
-    DropdownLabelsIntl,
-    DropdownTextItem,
-    Row,
-    showPopup,
-    ToggleWithLabel
-  } from '@hcengineering/ui'
-  import { defaultRecordingOptions, RecordingOptions, RecordingState, recordingStates, shareTypes } from '../index'
-  import { Writable } from 'svelte/store'
+    shareType as typeStore,
+    microphone as micStore,
+    camera as camStore,
+    recordingState as stateStore,
+    useCountdown as countdownStore,
+    RecordingState,
+    shareTypes
+  } from '../utils/recordingState'
   import _ from 'lodash'
 
-  export let recordingState: Writable<RecordingState>
-  $: options = defaultRecordingOptions
+  $: useCountdown = $countdownStore
+  $: recordingState = $stateStore
+  $: microphone = $micStore
+  $: camera = $camStore
+  $: shareType = $typeStore
   $: {
-    recordingState.set(new RecordingState('updateOptions', options))
+    console.log('RecordingSettings: $', useCountdown, recordingState, microphone, camera, shareType)
   }
 
   function constArrToDropdownItem(vals: readonly string[]): DropdownTextItem[] {
@@ -51,26 +50,25 @@
         .concat(nullDevice)
     }
     microphones = getDevice(devices, 'audioinput')
-    options.microphone = microphones[0].id
+    micStore.set(microphones[0].id)
     cameras = getDevice(devices, 'videoinput')
-    options.camera = cameras[0].id
-    options = options
+    camStore.set(cameras[0].id)
   })()
 </script>
 
 <Card
   label={video.string.RecordingSettings}
   onCancel={() => {
-    recordingState.set(new RecordingState('cancelled'))
+    recordingState = 'cancelled'
     closePopup('recordingSettings')
   }}
   width={'small'}
   okLabel={video.string.StartRecording}
   okAction={() => {
-    if (options.countdown) {
-      recordingState.set(new RecordingState('countdown'))
+    if (useCountdown) {
+      recordingState = 'countdown'
     } else {
-      recordingState.set(new RecordingState('recording'))
+      recordingState = 'recording'
     }
     closePopup('recordingSettings')
   }}
@@ -78,30 +76,34 @@
 >
   <ToggleWithLabel
     label={video.string.Countdown}
-    on={options.countdown}
+    on={useCountdown}
     on:change={(event) => {
-      options.countdown = event.detail
-      options = options
+      countdownStore.set(event.detail)
     }}
   />
-  <DropdownLabels items={constArrToDropdownItem(shareTypes)} label={video.string.ShareType} />
+  <DropdownLabels
+    items={constArrToDropdownItem(shareTypes)}
+    label={video.string.ShareType}
+    on:selected={(event) => {
+      typeStore.set(event.detail)
+    }}
+    selected={shareType}
+  />
   <DropdownLabels
     label={video.string.Microphone}
     items={microphones}
     on:selected={(event) => {
-      options.microphone = event.detail
-      options = options
+      micStore.set(event.detail)
     }}
-    selected={options.microphone}
+    selected={microphone}
   />
   <DropdownLabels
     label={video.string.Camera}
     items={cameras}
     on:selected={(event) => {
-      options.camera = event.detail
-      options = options
+      camStore.set(event.detail)
     }}
-    selected={options.camera}
+    selected={camera}
   />
 </Card>
 

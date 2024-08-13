@@ -2,36 +2,75 @@
   import { Button, ButtonKind, ButtonSize, closePopup, Row, showPopup } from '@hcengineering/ui'
   import video from '@hcengineering/video'
   import { defaultStreamOptions, MediaStreamer } from '../stream'
-  import { defaultRecordingOptions, RecordingOptions, RecordingState } from '..'
+  import { microphone as micStore, camera as cameraStore, recordingState } from '../utils/recordingState'
   import { onDestroy } from 'svelte'
-  import { Writable } from 'svelte/store'
 
-  export let recordingState: Writable<RecordingState>
+  $: allowCamera = false
+  $: camera = null as MediaStream | null
+  cameraStore.subscribe(async (deviceId) => {
+    if (camera) {
+      camera.getTracks().forEach((t) => t.stop())
+    }
+    if (deviceId === 'none') {
+      camera = null
+      allowCamera = false
+    } else {
+      allowCamera = true
+      try {
+        camera = await navigator.mediaDevices.getUserMedia({
+          video: { deviceId }
+        } as MediaStreamConstraints)
+      } catch (error) {
+        console.error(error)
+        // todo: 'please allow access to your camera'
+      }
+    }
+    try {
+      videoEl.srcObject = camera
+      await videoEl.play()
+    } catch (e) {
+      // do nothing
+    }
+  })
 
-  $: options = defaultRecordingOptions
-  recordingState.subscribe((val) => {
-    console.log('UPDATE', val)
-    const state = val.state
-    if (state === 'updateOptions') {
-      options = val.options ?? options
-      recordingState.set(new RecordingState('init'))
-    } else if (state === 'init') {
+  $: microphone = null as MediaStream | null
+  micStore.subscribe(async (deviceId) => {
+    if (microphone) {
+      microphone.getTracks().forEach((t) => t.stop())
+    }
+    if (deviceId === 'none') {
+      microphone = null
+    } else {
+      try {
+        microphone = await navigator.mediaDevices.getUserMedia({ audio: { deviceId } })
+      } catch (error) {
+        console.error(error)
+        // todo: 'please allow access to your microphone'
+      }
+    }
+  })
+
+  recordingState.subscribe(async (state) => {
+    if (state === 'init') {
       // do nothing
     } else if (state === 'countdown') {
-      // initialize countdown
+      await showCountdown()
     } else if (state === 'recording') {
-      record()
+      await record()
     } else if (state === 'paused') {
       // todo
     } else if (state === 'cancelled') {
-      onClose()
+      await onClose()
     } else if (state === 'finished') {
       // redirect to completed recording if applicable.
       // may open in new tab
     }
   })
 
-  let allowCamera = true
+  async function showCountdown() {
+    // todo
+    await record()
+  }
 
   const btnProps = {
     kind: 'icon' as ButtonKind,
@@ -40,7 +79,6 @@
 
   // get camera access
   let videoEl: HTMLVideoElement
-  let cam: MediaStream
   let recording = false
 
   const streamer = new MediaStreamer({
@@ -64,30 +102,18 @@
     ...defaultStreamOptions
   })
 
-  async function getCam() {
-    try {
-      cam = await navigator.mediaDevices.getUserMedia({
-        video: true,
-        audio: true
-      } as MediaStreamConstraints)
-      videoEl.srcObject = cam
-      await videoEl.play()
-    } catch (error) {
-      // todo: 'please allow access to your camera'
-    }
-  }
-  getCam()
-
   async function stopRecording(abort: boolean) {
-    if (cam) {
-      cam.getTracks().forEach((t) => t.stop())
+    if (camera) {
+      camera.getTracks().forEach((t) => t.stop())
+    }
+    if (microphone) {
+      microphone.getTracks().forEach((t) => t.stop())
     }
     const url = await streamer.stop(abort)
-    console.log(url)
   }
 
-  function onClose() {
-    stopRecording(true)
+  async function onClose() {
+    await stopRecording(true)
     closePopup('recordingPopup')
   }
 
@@ -96,9 +122,9 @@
   async function record() {
     const share = await navigator.mediaDevices.getDisplayMedia({
       video: true,
-      audio: true
+      audio: false
     })
-    cam.getAudioTracks().forEach((t) => {
+    microphone?.getAudioTracks().forEach((t) => {
       share.addTrack(t)
     })
     streamer.start(share)
@@ -106,10 +132,9 @@
 </script>
 
 <div class="container">
-  {#if allowCamera}
-    <!-- svelte-ignore a11y-media-has-caption -->
-    <video bind:this={videoEl} class="video" controls={false} muted={true}></video>
-  {/if}
+  <!-- svelte-ignore a11y-media-has-caption -->
+  <video bind:this={videoEl} class="video" style={!allowCamera ? 'display:none' : ''} controls={false} muted={true}
+  ></video>
   <div class="buttons">
     {#if !recording}
       <Button

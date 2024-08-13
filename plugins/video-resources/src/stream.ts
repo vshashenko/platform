@@ -27,6 +27,7 @@ export class MediaStreamer {
     this.options = options
   }
 
+  // todo : await connection
   start (source: MediaStream): void {
     let onDataAvailable: null | ((p: Promise<ReadResult>) => void) = null
     const recorder = new MediaRecorder(source)
