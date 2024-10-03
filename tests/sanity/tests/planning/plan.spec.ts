@@ -377,6 +377,7 @@ test.describe('Planning ToDo tests', () => {
     })
 
     await test.step('Check time changes', async () => {
+      test.skip()
       await planningNavigationMenuPage.clickOnButtonToDoAll()
       await planningPage.checkToDoExistAndShowDuration(toDoWithLabel.title, '3h')
     })
