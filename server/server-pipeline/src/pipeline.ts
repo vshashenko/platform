@@ -59,7 +59,7 @@ import {
 } from '@hcengineering/server-core'
 import {
   createRekoniAdapter,
-  createYDocAdapter,
+  createMarkupAdapter,
   FullTextMiddleware,
   type FulltextDBConfiguration
 } from '@hcengineering/server-indexer'
@@ -371,9 +371,9 @@ export function getConfig (
         contentType: '*',
         url: opt.rekoniUrl
       },
-      YDoc: {
-        factory: createYDocAdapter,
-        contentType: 'application/ydoc',
+      Markup: {
+        factory: createMarkupAdapter,
+        contentType: 'application/json',
         url: ''
       },
       ...extensions?.contentAdapters

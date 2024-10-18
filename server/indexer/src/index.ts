@@ -24,8 +24,8 @@ import type { FullTextPipelineStage } from './indexer'
 
 export * from './fulltext'
 export * from './indexer'
+export * from './markup'
 export * from './rekoni'
-export * from './ydoc'
 
 /**
  * @public

@@ -18,12 +18,13 @@ import {
   type Blob,
   type Data,
   type Doc,
-  generateId,
-  makeCollaborativeDoc,
   type Ref,
   type TxOperations
+  generateId,
+  makeCollabId,
+  makeCollabJsonId,
 } from '@hcengineering/core'
-import document, { type Document, getFirstRank, type Teamspace } from '@hcengineering/document'
+import document, { type Document, type Teamspace, getFirstRank } from '@hcengineering/document'
 import { makeRank } from '@hcengineering/rank'
 import {
   jsonToYDocNoSchema,
@@ -32,7 +33,8 @@ import {
   MarkupNodeType,
   parseMessageMarkdown,
   traverseNode,
-  traverseNodeMarks
+  traverseNodeMarks,
+  jsonToMarkup
 } from '@hcengineering/text'
 
 import { type Attachment } from '@hcengineering/attachment'
@@ -325,8 +327,6 @@ async function createDBPageWithAttachments (
   documentMetaMap?: Map<string, DocumentMetadata>
 ): Promise<void> {
   const pageId = docMeta.id as Ref<Document>
-  const collabId = makeCollaborativeDoc(pageId, 'content')
-
   const parentId = parentMeta !== undefined ? (parentMeta.id as Ref<Document>) : document.ids.NoParent
 
   const lastRank = await getFirstRank(client, space, parentId)
@@ -334,7 +334,7 @@ async function createDBPageWithAttachments (
 
   const object: Data<Document> = {
     title: docMeta.name,
-    content: collabId,
+    content: null,
     parent: parentId,
     attachments: 0,
     embeddings: 0,
@@ -448,9 +448,8 @@ async function importPageDocument (
   const buffer = yDocToBuffer(yDoc)
 
   const id = docMeta.id as Ref<Document>
-  const collabId = makeCollaborativeDoc(id, 'description')
-
-  await fileUploader.uploadCollaborativeDoc(id, collabId, buffer)
+  const collabId = makeCollabId(document.class.Document, id, 'content')
+  const blobId = await fileUploader.uploadCollaborativeDoc(id, collabId, buffer)
 
   const parent = (parentMeta?.id as Ref<Document>) ?? document.ids.NoParent
 
@@ -459,7 +458,7 @@ async function importPageDocument (
 
   const attachedData: Data<Document> = {
     title: docMeta.name,
-    content: collabId,
+    content: blobId,
     parent,
     attachments: 0,
     embeddings: 0,

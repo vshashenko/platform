@@ -17,10 +17,10 @@ import core, {
   Account,
   AttachedDoc,
   Attribute,
+  Blob,
   Class,
   Classifier,
   ClassifierKind,
-  CollaborativeDoc,
   Data,
   DateRangeMode,
   Doc,
@@ -500,15 +500,8 @@ export function ArrOf<T extends PropertyType | Ref<Doc>> (type: Type<T>): TypeAr
 /**
  * @public
  */
-export function TypeCollaborativeDoc (): Type<CollaborativeDoc> {
+export function TypeCollaborativeDoc (): Type<Ref<Blob>> {
   return { _class: core.class.TypeCollaborativeDoc, label: core.string.CollaborativeDoc }
-}
-
-/**
- * @public
- */
-export function TypeCollaborativeDocVersion (): Type<CollaborativeDoc> {
-  return { _class: core.class.TypeCollaborativeDocVersion, label: core.string.CollaborativeDocVersion }
 }
 
 /**

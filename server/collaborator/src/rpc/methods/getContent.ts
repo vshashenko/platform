@@ -21,14 +21,17 @@ import { RpcMethodParams } from '../rpc'
 export async function getContent (
   ctx: MeasureContext,
   context: Context,
-  documentId: string,
+  documentName: string,
   payload: GetContentRequest,
   params: RpcMethodParams
 ): Promise<GetContentResponse> {
   const { hocuspocus, transformer } = params
+  const { source } = payload
+
+  context = { ...context, content: source }
 
   const connection = await ctx.with('connect', {}, async () => {
-    return await hocuspocus.openDirectConnection(documentId, context)
+    return await hocuspocus.openDirectConnection(documentName, context)
   })
 
   try {

@@ -47,18 +47,18 @@ import contact, { type Employee } from '@hcengineering/contact'
 import {
   DateRangeMode,
   IndexKind,
+  type Blob,
   type Class,
   type Doc,
+  type Domain,
   type Ref,
   type Timestamp,
   type Type,
   type CollectionSize,
-  type CollaborativeDoc,
   type Role,
   type TypedSpace,
   type Account,
-  type RolesAssignment,
-  type Domain
+  type RolesAssignment
 } from '@hcengineering/core'
 import {
   ArrOf,
@@ -259,7 +259,7 @@ export class TDocument extends TDoc implements Document {
     state!: DocumentState
 
   @Prop(TypeCollaborativeDoc(), documents.string.CollaborativeDocument)
-    content!: CollaborativeDoc
+    content!: Ref<Blob> | null
 
   @Prop(Collection(tags.class.TagReference), documents.string.Labels)
     labels?: CollectionSize<TagReference>
@@ -425,7 +425,7 @@ export class TDocumentSnapshot extends TAttachedDoc implements DocumentSnapshot 
 
   @Prop(TypeCollaborativeDoc(), documents.string.CollaborativeDocument)
   @Hidden()
-    content!: CollaborativeDoc
+    content!: Ref<Blob> | null
 
   @Prop(TypeDocumentState(), documents.string.Status)
     state?: DocumentState

@@ -15,13 +15,13 @@
 
 import { Event } from '@hcengineering/calendar'
 import type { Channel, Organization, Person } from '@hcengineering/contact'
-import type { AttachedData, AttachedDoc, CollaborativeDoc, Markup, Ref, Status, Timestamp } from '@hcengineering/core'
+import type { AttachedData, AttachedDoc, Blob, Markup, Ref, Status, Timestamp } from '@hcengineering/core'
 import { TagReference } from '@hcengineering/tags'
 import type { Project, Task } from '@hcengineering/task'
 
 /** @public */
 export interface Vacancy extends Project {
-  fullDescription: CollaborativeDoc
+  fullDescription: Ref<Blob> | null
   attachments?: number
   dueTo?: Timestamp
   location?: string

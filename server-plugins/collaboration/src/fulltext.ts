@@ -16,7 +16,6 @@
 import core, {
   Blob,
   Class,
-  CollaborativeDoc,
   Doc,
   DocIndexState,
   DocumentQuery,
@@ -24,7 +23,6 @@ import core, {
   MeasureContext,
   Ref,
   WorkspaceId,
-  collaborativeDocParse,
   getFullTextIndexableAttributes
 } from '@hcengineering/core'
 import { ContentTextAdapter, DbAdapter, IndexedDoc, StorageAdapter } from '@hcengineering/server-core'
@@ -99,11 +97,9 @@ export class CollaborativeContentRetrievalStage implements FullTextPipelineStage
     try {
       for (const [, val] of Object.entries(attributes)) {
         if (val.type._class === core.class.TypeCollaborativeDoc) {
-          const collaborativeDoc = doc.attributes[docKey(val.name, { _class: val.attributeOf })] as CollaborativeDoc
-          if (collaborativeDoc !== undefined && collaborativeDoc !== '') {
-            const { documentId } = collaborativeDocParse(collaborativeDoc)
-
-            const docInfo: Blob | undefined = await this.storageAdapter?.stat(this.metrics, this.workspace, documentId)
+          const content = doc.attributes[docKey(val.name, { _class: val.attributeOf })] as Ref<Blob>
+          if (content !== undefined) {
+            const docInfo: Blob | undefined = await this.storageAdapter?.stat(this.metrics, this.workspace, content)
 
             if (docInfo !== undefined) {
               const digest = docInfo.etag
@@ -112,13 +108,13 @@ export class CollaborativeContentRetrievalStage implements FullTextPipelineStage
                 ;(update as any)[docUpdKey(digestKey)] = digest
 
                 const contentType = (docInfo.contentType ?? '').split(';')[0]
-                const readable = await this.storageAdapter?.get(this.metrics, this.workspace, documentId)
+                const readable = await this.storageAdapter?.get(this.metrics, this.workspace, content)
 
                 if (readable !== undefined) {
                   let textContent = await this.metrics.with(
                     'fetch',
                     {},
-                    async () => await this.contentAdapter.content(documentId, contentType, readable)
+                    async () => await this.contentAdapter.content(content, contentType, readable)
                   )
                   readable?.destroy()
 

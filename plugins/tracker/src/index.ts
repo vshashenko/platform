@@ -17,8 +17,8 @@ import { Employee, Person } from '@hcengineering/contact'
 import {
   AttachedDoc,
   Attribute,
+  Blob,
   Class,
-  CollaborativeDoc,
   CollectionSize,
   Data,
   Doc,
@@ -182,7 +182,7 @@ export interface Milestone extends Doc {
 export interface Issue extends Task {
   attachedTo: Ref<Issue>
   title: string
-  description: CollaborativeDoc
+  description: Ref<Blob> | null
   status: Ref<IssueStatus>
   priority: IssuePriority
 

@@ -14,17 +14,17 @@
 //
 import attachment, { type Attachment } from '@hcengineering/attachment'
 import chunter, { type ChatMessage } from '@hcengineering/chunter'
-import { yDocToBuffer } from '@hcengineering/collaboration'
 import { type Person } from '@hcengineering/contact'
 import core, {
   type Account,
   type AttachedData,
+  type Blob,
   type CollaborativeDoc,
   type Data,
   type Doc,
   type DocumentQuery,
   generateId,
-  makeCollaborativeDoc,
+  makeCollabId,
   type Mixin,
   type Ref,
   SortingOrder,
@@ -40,7 +40,7 @@ import task, {
   type TaskType,
   type TaskTypeWithFactory
 } from '@hcengineering/task'
-import { jsonToMarkup, jsonToYDocNoSchema, type MarkupNode, parseMessageMarkdown } from '@hcengineering/text'
+import { jsonToMarkup, type MarkupNode, parseMessageMarkdown } from '@hcengineering/text'
 import tracker, {
   type Issue,
   type IssueParentInfo,
@@ -49,7 +49,7 @@ import tracker, {
   type Project,
   TimeReportDayType
 } from '@hcengineering/tracker'
-import { type FileUploader, type UploadResult } from './uploader'
+import { type FileUploader } from './uploader'
 
 export interface ImportWorkspace {
   persons?: ImportPerson[]
@@ -273,14 +273,15 @@ export class WorkspaceImporter {
   ): Promise<Ref<Document>> {
     const id = generateId<Document>()
     const content = await doc.descrProvider()
-    const collabId = await this.createCollaborativeContent(id, 'content', content)
+    const collabId = makeCollabId(document.class.Document, id, 'content')
+    const contentId = await this.createCollaborativeContent(id, collabId, content)
 
     const lastRank = await getFirstRank(this.client, teamspaceId, parentId)
     const rank = makeRank(lastRank, undefined)
 
     const attachedData: Data<Document> = {
       title: doc.title,
-      content: collabId,
+      content: contentId,
       parent: parentId,
       attachments: 0,
       embeddings: 0,
@@ -377,7 +378,8 @@ export class WorkspaceImporter {
   ): Promise<{ id: Ref<Issue>, identifier: string }> {
     const issueId = generateId<Issue>()
     const content = await issue.descrProvider()
-    const collabId = await this.createCollaborativeContent(issueId, 'description', content)
+    const collabId = makeCollabId(tracker.class.Issue, issueId, 'description')
+    const contentId = await this.createCollaborativeContent(issueId, collabId, content)
 
     const { number, identifier } = await this.getNextIssueIdentifier(project)
     const kind = await this.getIssueKind(project)
@@ -390,7 +392,7 @@ export class WorkspaceImporter {
 
     const issueData: AttachedData<Issue> = {
       title: issue.title,
-      description: collabId,
+      description: contentId,
       assignee: issue.assignee ?? null,
       component: null,
       number,
@@ -523,46 +525,34 @@ export class WorkspaceImporter {
     const attachmentId = generateId<Attachment>()
     const file = new File([blob], attach.title)
 
-    const response = await this.fileUploader.uploadFile(attachmentId, attach.title, file)
-    if (response.status === 200) {
-      const responseText = await response.text()
-      if (responseText !== undefined) {
-        const uploadResult = JSON.parse(responseText) as UploadResult[]
-        if (!Array.isArray(uploadResult) || uploadResult.length === 0) {
-          return null
-        }
-
-        await this.client.addCollection(
-          attachment.class.Attachment,
-          projectId,
-          commentId,
-          chunter.class.ChatMessage,
-          'attachments',
-          {
-            file: uploadResult[0].id,
-            lastModified: Date.now(),
-            name: file.name,
-            size: file.size,
-            type: file.type
-          },
-          attachmentId
-        )
-      }
-    }
+    const blobId = await this.fileUploader.uploadFile(attachmentId, attach.title, file)
+    await this.client.addCollection(
+      attachment.class.Attachment,
+      projectId,
+      commentId,
+      chunter.class.ChatMessage,
+      'attachments',
+      {
+        file: blobId,
+        lastModified: Date.now(),
+        name: file.name,
+        size: file.size,
+        type: file.type
+      },
+      attachmentId
+    )
     return attachmentId
   }
 
   // Collaborative content handling
-  private async createCollaborativeContent (id: Ref<Doc>, field: string, content: string): Promise<CollaborativeDoc> {
+  private async createCollaborativeContent (id: Ref<Doc>, collabId: CollaborativeDoc, content: string): Promise<Ref<Blob>> {
     const json = parseMessageMarkdown(content ?? '', 'image://')
     const processedJson = this.preprocessor.process(json)
-    const collabId = makeCollaborativeDoc(id, 'description')
 
-    const yDoc = jsonToYDocNoSchema(processedJson, field)
-    const buffer = yDocToBuffer(yDoc)
+    const markup = jsonToMarkup(processedJson)
+    const buffer = Buffer.from(markup)
 
-    await this.fileUploader.uploadCollaborativeDoc(id, collabId, buffer)
-    return collabId
+    return await this.fileUploader.uploadCollaborativeDoc(id, collabId, buffer)
   }
 
   async findIssueStatusByName (name: string): Promise<Ref<IssueStatus>> {

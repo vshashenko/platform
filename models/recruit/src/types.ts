@@ -17,7 +17,7 @@ import type { Employee, Organization } from '@hcengineering/contact'
 import {
   Account,
   IndexKind,
-  type CollaborativeDoc,
+  type Blob,
   type Domain,
   type Markup,
   type Ref,
@@ -66,7 +66,7 @@ import recruit from './plugin'
 export class TVacancy extends TProject implements Vacancy {
   @Prop(TypeCollaborativeDoc(), recruit.string.FullDescription)
   @Index(IndexKind.FullText)
-    fullDescription!: CollaborativeDoc
+    fullDescription!: Ref<Blob> | null
 
   @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments, { shortLabel: attachment.string.Files })
     attachments?: number

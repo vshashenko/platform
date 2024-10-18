@@ -14,13 +14,20 @@
 //
 
 import { type CollaboratorClient, getClient as getCollaborator } from '@hcengineering/collaborator-client'
-import { type CollaborativeDoc, type Markup, getWorkspaceId } from '@hcengineering/core'
+import {
+  type Blob,
+  type CollaborativeDoc,
+  type Markup,
+  type Ref,
+  getWorkspaceId,
+  makeCollabJsonId
+} from '@hcengineering/core'
 import { getMetadata } from '@hcengineering/platform'
 
 import presentation from './plugin'
+import { uploadFile } from './file'
 
-/** @public */
-export function getCollaboratorClient (): CollaboratorClient {
+function getClient (): CollaboratorClient {
   const workspaceId = getWorkspaceId(getMetadata(presentation.metadata.WorkspaceId) ?? '')
   const token = getMetadata(presentation.metadata.Token) ?? ''
   const collaboratorURL = getMetadata(presentation.metadata.CollaboratorUrl) ?? ''
@@ -29,19 +36,27 @@ export function getCollaboratorClient (): CollaboratorClient {
 }
 
 /** @public */
-export async function getMarkup (collaborativeDoc: CollaborativeDoc): Promise<Record<string, Markup>> {
-  const client = getCollaboratorClient()
-  return await client.getContent(collaborativeDoc)
+export async function getMarkup (doc: CollaborativeDoc, source: Ref<Blob>): Promise<Markup> {
+  const client = getClient()
+  return await client.getContent(doc, source)
 }
 
 /** @public */
-export async function updateMarkup (collaborativeDoc: CollaborativeDoc, content: Record<string, Markup>): Promise<void> {
-  const client = getCollaboratorClient()
-  await client.updateContent(collaborativeDoc, content)
+export async function updateMarkup (doc: CollaborativeDoc, markup: Markup): Promise<void> {
+  const client = getClient()
+  await client.updateContent(doc, markup)
 }
 
 /** @public */
-export async function copyDocument (source: CollaborativeDoc, target: CollaborativeDoc): Promise<void> {
-  const client = getCollaboratorClient()
+export async function copyMarkup (source: CollaborativeDoc, target: CollaborativeDoc): Promise<void> {
+  const client = getClient()
   await client.copyContent(source, target)
+}
+
+/** @public */
+export async function createMarkup (doc: CollaborativeDoc, markup: Markup): Promise<Ref<Blob>> {
+  const fileId = makeCollabJsonId(doc)
+  const file = new File([markup], fileId, { type: 'application/json' })
+  await uploadFile(file, fileId)
+  return fileId
 }

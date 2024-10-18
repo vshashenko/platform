@@ -13,22 +13,17 @@
 // limitations under the License.
 //
 import {
-  concatLink,
   type Ref,
   type Blob as PlatformBlob,
   type Doc,
   type CollaborativeDoc,
-  collaborativeDocParse
+  concatLink,
+  makeCollabJsonId
 } from '@hcengineering/core'
 
 export interface FileUploader {
-  uploadFile: (id: Ref<Doc>, name: string, file: File, contentType?: string) => Promise<Response>
-  uploadCollaborativeDoc: (id: Ref<Doc>, collabId: CollaborativeDoc, data: Buffer) => Promise<Response>
-}
-
-export interface UploadResult {
-  key: 'file'
-  id: Ref<PlatformBlob>
+  uploadFile: (id: Ref<Doc>, name: string, file: File, contentType?: string) => Promise<Ref<PlatformBlob>>
+  uploadCollaborativeDoc: (id: Ref<Doc>, collabId: CollaborativeDoc, data: Buffer) => Promise<Ref<PlatformBlob>>
 }
 
 export class FrontFileUploader implements FileUploader {
@@ -37,7 +32,7 @@ export class FrontFileUploader implements FileUploader {
     private readonly token: string
   ) {}
 
-  public async uploadFile (id: Ref<Doc>, name: string, file: File, contentType?: string): Promise<Response> {
+  public async uploadFile (id: Ref<Doc>, name: string, file: File, contentType?: string): Promise<Ref<PlatformBlob>> {
     const form = new FormData()
     form.append('file', file, name)
     form.append('type', contentType ?? file.type)
@@ -46,18 +41,21 @@ export class FrontFileUploader implements FileUploader {
     form.append('id', id)
     form.append('data', new Blob([file]))
 
-    return await fetch(concatLink(this.frontUrl, '/files'), {
+    await fetch(concatLink(this.frontUrl, '/files'), {
       method: 'POST',
       headers: {
         Authorization: 'Bearer ' + this.token
       },
       body: form
     })
+
+    return name as Ref<PlatformBlob>
   }
 
-  public async uploadCollaborativeDoc (id: Ref<Doc>, collabId: CollaborativeDoc, data: Buffer): Promise<Response> {
-    const file = new File([data], collabId)
-    const { documentId } = collaborativeDocParse(collabId)
-    return await this.uploadFile(id, documentId, file, 'application/ydoc')
+  public async uploadCollaborativeDoc (id: Ref<Doc>, collabId: CollaborativeDoc, data: Buffer): Promise<Ref<PlatformBlob>> {
+    const blobId = makeCollabJsonId(collabId)
+    const file = new File([data], blobId)
+    await this.uploadFile(id, blobId, file, 'application/json')
+    return blobId
   }
 }

@@ -56,7 +56,6 @@ import serverClientPlugin, {
   listAccountWorkspaces,
   updateBackupInfo
 } from '@hcengineering/server-client'
-import { getServerPipeline, registerServerPlugins, registerStringLoaders } from '@hcengineering/server-pipeline'
 import serverToken, { decodeToken, generateToken } from '@hcengineering/server-token'
 import toolPlugin, { FileModelLogger } from '@hcengineering/server-tool'
 import { createWorkspace, upgradeWorkspace } from '@hcengineering/workspace-service'
@@ -81,8 +80,7 @@ import core, {
   type Ref,
   type Tx,
   type Version,
-  type WorkspaceId,
-  type WorkspaceIdWithUrl
+  type WorkspaceId
 } from '@hcengineering/core'
 import { consoleModelLogger, type MigrateOperation } from '@hcengineering/model'
 import contact from '@hcengineering/model-contact'
@@ -115,7 +113,7 @@ import {
 } from './clean'
 import { changeConfiguration } from './configuration'
 import { moveAccountDbFromMongoToPG, moveFromMongoToPG, moveWorkspaceFromMongoToPG } from './db'
-import { fixJsonMarkup, migrateMarkup, restoreLostMarkup } from './markup'
+import { restoreLostMarkup } from './markup'
 import { fixMixinForeignAttributes, showMixinForeignAttributes } from './mixin'
 import { fixAccountEmails, renameAccount } from './renameAccount'
 import { moveFiles, showLostFiles } from './storage'
@@ -1579,63 +1577,6 @@ export function devTool (
           const wsid = getWorkspaceId(workspace.workspace)
           await recreateElastic(mongodbUri ?? dbUrl, wsid)
         }
-      })
-    })
-
-  program
-    .command('fix-json-markup-mongo <workspace>')
-    .description('fixes double converted json markup')
-    .action(async (workspace: string) => {
-      const mongodbUri = getMongoDBUrl()
-      await withStorage(async (adapter) => {
-        const wsid = getWorkspaceId(workspace)
-        const endpoint = await getTransactorEndpoint(generateToken(systemAccountEmail, wsid), 'external')
-        await fixJsonMarkup(toolCtx, mongodbUri, adapter, wsid, endpoint)
-      })
-    })
-
-  program
-    .command('migrate-markup-mongo')
-    .description('migrates collaborative markup to storage')
-    .option('-w, --workspace <workspace>', 'Selected workspace only', '')
-    .option('-c, --concurrency <concurrency>', 'Number of documents being processed concurrently', '10')
-    .action(async (cmd: { workspace: string, concurrency: string }) => {
-      const { dbUrl, txes } = prepareTools()
-      const mongodbUri = getMongoDBUrl()
-      await withDatabase(dbUrl, async (db) => {
-        await withStorage(async (adapter) => {
-          const workspaces = await listWorkspacesPure(db)
-          const client = getMongoClient(mongodbUri)
-          const _client = await client.getClient()
-          let index = 0
-          try {
-            for (const workspace of workspaces) {
-              if (cmd.workspace !== '' && workspace.workspace !== cmd.workspace) {
-                continue
-              }
-
-              const wsId = getWorkspaceId(workspace.workspace)
-              console.log('processing workspace', workspace.workspace, index, workspaces.length)
-              const wsUrl: WorkspaceIdWithUrl = {
-                name: workspace.workspace,
-                workspaceName: workspace.workspaceName ?? '',
-                workspaceUrl: workspace.workspaceUrl ?? ''
-              }
-
-              registerServerPlugins()
-              registerStringLoaders()
-
-              const { pipeline } = await getServerPipeline(toolCtx, txes, dbUrl, wsUrl)
-
-              await migrateMarkup(toolCtx, adapter, wsId, _client, pipeline, parseInt(cmd.concurrency))
-
-              console.log('...done', workspace.workspace)
-              index++
-            }
-          } finally {
-            client.close()
-          }
-        })
       })
     })
 
