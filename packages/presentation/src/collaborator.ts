@@ -36,7 +36,7 @@ function getClient (): CollaboratorClient {
 }
 
 /** @public */
-export async function getMarkup (doc: CollaborativeDoc, source: Ref<Blob>): Promise<Markup> {
+export async function getMarkup (doc: CollaborativeDoc, source: Ref<Blob> | null | undefined): Promise<Markup> {
   const client = getClient()
   return await client.getContent(doc, source)
 }
