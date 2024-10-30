@@ -15,15 +15,14 @@
 import {
   type Ref,
   type Blob as PlatformBlob,
-  type Doc,
   type CollaborativeDoc,
   concatLink,
   makeCollabJsonId
 } from '@hcengineering/core'
 
 export interface FileUploader {
-  uploadFile: (id: Ref<Doc>, name: string, file: File, contentType?: string) => Promise<Ref<PlatformBlob>>
-  uploadCollaborativeDoc: (id: Ref<Doc>, collabId: CollaborativeDoc, data: Buffer) => Promise<Ref<PlatformBlob>>
+  uploadFile: (name: string, file: Blob) => Promise<Ref<PlatformBlob>>
+  uploadCollaborativeDoc: (collabId: CollaborativeDoc, data: Buffer) => Promise<Ref<PlatformBlob>>
 }
 
 export class FrontFileUploader implements FileUploader {
@@ -32,16 +31,11 @@ export class FrontFileUploader implements FileUploader {
     private readonly token: string
   ) {}
 
-  public async uploadFile (id: Ref<Doc>, name: string, file: File, contentType?: string): Promise<Ref<PlatformBlob>> {
+  public async uploadFile (name: string, file: Blob): Promise<Ref<PlatformBlob>> {
     const form = new FormData()
     form.append('file', file, name)
-    form.append('type', contentType ?? file.type)
-    form.append('size', file.size.toString())
-    form.append('name', file.name)
-    form.append('id', id)
-    form.append('data', new Blob([file]))
 
-    await fetch(concatLink(this.frontUrl, '/files'), {
+    const res = await fetch(concatLink(this.frontUrl, '/files'), {
       method: 'POST',
       headers: {
         Authorization: 'Bearer ' + this.token
@@ -49,13 +43,16 @@ export class FrontFileUploader implements FileUploader {
       body: form
     })
 
-    return name as Ref<PlatformBlob>
+    if (res.ok && res.status === 200) {
+      return name as Ref<PlatformBlob>
+    }
+
+    throw new Error('Failed to upload file')
   }
 
-  public async uploadCollaborativeDoc (id: Ref<Doc>, collabId: CollaborativeDoc, data: Buffer): Promise<Ref<PlatformBlob>> {
+  public async uploadCollaborativeDoc (collabId: CollaborativeDoc, data: Buffer): Promise<Ref<PlatformBlob>> {
     const blobId = makeCollabJsonId(collabId)
-    const file = new File([data], blobId)
-    await this.uploadFile(id, blobId, file, 'application/json')
-    return blobId
+    const blob = new Blob([data], { type: 'application/json' })
+    return await this.uploadFile(blobId, blob)
   }
 }

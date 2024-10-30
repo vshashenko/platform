@@ -17,12 +17,10 @@ import {
   type AttachedData,
   type Blob,
   type Data,
-  type Doc,
   type Ref,
-  type TxOperations
+  type TxOperations,
   generateId,
-  makeCollabId,
-  makeCollabJsonId,
+  makeCollabId
 } from '@hcengineering/core'
 import document, { type Document, type Teamspace, getFirstRank } from '@hcengineering/document'
 import { makeRank } from '@hcengineering/rank'
@@ -33,8 +31,7 @@ import {
   MarkupNodeType,
   parseMessageMarkdown,
   traverseNode,
-  traverseNodeMarks,
-  jsonToMarkup
+  traverseNodeMarks
 } from '@hcengineering/text'
 
 import { type Attachment } from '@hcengineering/attachment'
@@ -409,7 +406,7 @@ async function importAttachment (
   }
 
   const file = new File([data], docMeta.name)
-  await fileUploader.uploadFile(docMeta.id as Ref<Doc>, docMeta.name, file)
+  await fileUploader.uploadFile(docMeta.name, file)
 
   const attachedData: AttachedData<Attachment> = {
     file: docMeta.id as Ref<Blob>,
@@ -449,7 +446,7 @@ async function importPageDocument (
 
   const id = docMeta.id as Ref<Document>
   const collabId = makeCollabId(document.class.Document, id, 'content')
-  const blobId = await fileUploader.uploadCollaborativeDoc(id, collabId, buffer)
+  const blobId = await fileUploader.uploadCollaborativeDoc(collabId, buffer)
 
   const parent = (parentMeta?.id as Ref<Document>) ?? document.ids.NoParent
 

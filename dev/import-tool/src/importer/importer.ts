@@ -18,7 +18,7 @@ import { type Person } from '@hcengineering/contact'
 import core, {
   type Account,
   type AttachedData,
-  type Blob,
+  type Blob as PlatformBlob,
   type CollaborativeDoc,
   type Data,
   type Doc,
@@ -509,8 +509,9 @@ export class WorkspaceImporter {
         continue
       }
 
-      const attachmentId = await this.createAttachment(blob, attach, projectId, commentId)
-      if (attachmentId === null) {
+      try {
+        await this.createAttachment(blob, attach, projectId, commentId)
+      } catch {
         console.warn('Failed to upload attachment file: ', attach.title)
       }
     }
@@ -521,11 +522,9 @@ export class WorkspaceImporter {
     attach: ImportAttachment,
     projectId: Ref<Project>,
     commentId: Ref<ChatMessage>
-  ): Promise<Ref<Attachment> | null> {
+  ): Promise<Ref<Attachment>> {
     const attachmentId = generateId<Attachment>()
-    const file = new File([blob], attach.title)
-
-    const blobId = await this.fileUploader.uploadFile(attachmentId, attach.title, file)
+    const blobId = await this.fileUploader.uploadFile(attach.title, blob)
     await this.client.addCollection(
       attachment.class.Attachment,
       projectId,
@@ -535,9 +534,9 @@ export class WorkspaceImporter {
       {
         file: blobId,
         lastModified: Date.now(),
-        name: file.name,
-        size: file.size,
-        type: file.type
+        name: attach.title,
+        size: blob.size,
+        type: blob.type
       },
       attachmentId
     )
@@ -545,14 +544,18 @@ export class WorkspaceImporter {
   }
 
   // Collaborative content handling
-  private async createCollaborativeContent (id: Ref<Doc>, collabId: CollaborativeDoc, content: string): Promise<Ref<Blob>> {
+  private async createCollaborativeContent (
+    id: Ref<Doc>,
+    collabId: CollaborativeDoc,
+    content: string
+  ): Promise<Ref<PlatformBlob>> {
     const json = parseMessageMarkdown(content ?? '', 'image://')
     const processedJson = this.preprocessor.process(json)
 
     const markup = jsonToMarkup(processedJson)
     const buffer = Buffer.from(markup)
 
-    return await this.fileUploader.uploadCollaborativeDoc(id, collabId, buffer)
+    return await this.fileUploader.uploadCollaborativeDoc(collabId, buffer)
   }
 
   async findIssueStatusByName (name: string): Promise<Ref<IssueStatus>> {
