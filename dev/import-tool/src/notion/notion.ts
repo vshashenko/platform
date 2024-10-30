@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import { yDocToBuffer } from '@hcengineering/collaboration'
 import {
   type AttachedData,
   type Blob,
@@ -25,7 +24,7 @@ import {
 import document, { type Document, type Teamspace, getFirstRank } from '@hcengineering/document'
 import { makeRank } from '@hcengineering/rank'
 import {
-  jsonToYDocNoSchema,
+  jsonToMarkup,
   MarkupMarkType,
   type MarkupNode,
   MarkupNodeType,
@@ -441,8 +440,8 @@ async function importPageDocument (
   if (documentMetaMap !== undefined) {
     preProcessMarkdown(json, documentMetaMap)
   }
-  const yDoc = jsonToYDocNoSchema(json, 'content')
-  const buffer = yDocToBuffer(yDoc)
+  const markup = jsonToMarkup(json)
+  const buffer = Buffer.from(markup)
 
   const id = docMeta.id as Ref<Document>
   const collabId = makeCollabId(document.class.Document, id, 'content')
