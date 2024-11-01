@@ -14,7 +14,15 @@
 //
 
 import activity from '@hcengineering/activity'
-import type { Blob, Class, CollectionSize, Domain, Rank, Role, RolesAssignment } from '@hcengineering/core'
+import type {
+  Class,
+  CollectionSize,
+  CollaborativeContent,
+  Domain,
+  Rank,
+  Role,
+  RolesAssignment
+} from '@hcengineering/core'
 import { Account, AccountRole, IndexKind, Ref } from '@hcengineering/core'
 import {
   type Document,
@@ -33,7 +41,7 @@ import {
   Model,
   Prop,
   ReadOnly,
-  TypeCollaborativeDoc,
+  TypeCollaborativeContent,
   TypeNumber,
   TypeRef,
   TypeString,
@@ -76,8 +84,8 @@ export class TDocument extends TDoc implements Document, Todoable {
   @Index(IndexKind.FullText)
     title!: string
 
-  @Prop(TypeCollaborativeDoc(), document.string.Document)
-    content!: Ref<Blob> | null
+  @Prop(TypeCollaborativeContent(), document.string.Document)
+    content!: CollaborativeContent | null
 
   @Prop(TypeRef(document.class.Document), document.string.ParentDocument)
     parent!: Ref<Document>
@@ -137,9 +145,9 @@ export class TDocumentSnapshot extends TDoc implements DocumentSnapshot {
   @Index(IndexKind.FullText)
     title!: string
 
-  @Prop(TypeCollaborativeDoc(), document.string.Document)
+  @Prop(TypeCollaborativeContent(), document.string.Document)
   @ReadOnly()
-    content!: Ref<Blob>
+    content!: CollaborativeContent
 
   @Prop(TypeRef(document.class.Document), document.string.ParentDocument)
     parent!: Ref<Document>

@@ -176,7 +176,7 @@ async function migrateCollaborativeContentToStorage (client: MigrationClient): P
 
     const iterator = await client.traverse(domain, query)
     try {
-      console.log('processing', _class)
+      ctx.info('processing', { _class })
       await processMigrateContentFor(ctx, domain, attributes, client, storageAdapter, iterator)
     } finally {
       await iterator.close()
@@ -227,7 +227,7 @@ async function processMigrateContentFor (
               const buffer = Buffer.from(value)
               await storageAdapter.put(ctx, client.workspaceId, blobId, buffer, 'application/json', buffer.length)
             } catch (err) {
-              console.error('failed to process document', doc._class, doc._id, err)
+              ctx.error('failed to process document', { _class: doc._class, _id: doc._id, err })
             }
 
             update[attributeName] = blobId
@@ -249,7 +249,7 @@ async function processMigrateContentFor (
     }
 
     processed += docs.length
-    console.log('...processed', processed)
+    ctx.info('...processed', { count: processed })
   }
 }
 
@@ -275,7 +275,7 @@ async function migrateCollaborativeDocsToJson (client: MigrationClient): Promise
 
     const iterator = await client.traverse(domain, query)
     try {
-      console.log('processing', _class)
+      ctx.info('processing', { _class })
       await processMigrateJsonForDomain(ctx, domain, attributes, client, storageAdapter, iterator)
     } finally {
       await iterator.close()
@@ -319,7 +319,7 @@ async function processMigrateJsonForDomain (
     }
 
     processed += docs.length
-    console.log('...processed', processed)
+    ctx.info('...processed', { count: processed })
   }
 }
 

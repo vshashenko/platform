@@ -47,8 +47,8 @@ import contact, { type Employee } from '@hcengineering/contact'
 import {
   DateRangeMode,
   IndexKind,
-  type Blob,
   type Class,
+  type CollaborativeContent,
   type Doc,
   type Domain,
   type Ref,
@@ -74,7 +74,7 @@ import {
   TypeRef,
   TypeString,
   UX,
-  TypeCollaborativeDoc,
+  TypeCollaborativeContent,
   TypeMarkup,
   ReadOnly
 } from '@hcengineering/model'
@@ -258,8 +258,8 @@ export class TDocument extends TDoc implements Document {
   @Prop(TypeDocumentState(), documents.string.Status)
     state!: DocumentState
 
-  @Prop(TypeCollaborativeDoc(), documents.string.CollaborativeDocument)
-    content!: Ref<Blob> | null
+  @Prop(TypeCollaborativeContent(), documents.string.CollaborativeDocument)
+    content!: CollaborativeContent | null
 
   @Prop(Collection(tags.class.TagReference), documents.string.Labels)
     labels?: CollectionSize<TagReference>
@@ -423,9 +423,9 @@ export class TDocumentSnapshot extends TAttachedDoc implements DocumentSnapshot 
   @Prop(TypeString(), documents.string.Name)
     name?: string
 
-  @Prop(TypeCollaborativeDoc(), documents.string.CollaborativeDocument)
+  @Prop(TypeCollaborativeContent(), documents.string.CollaborativeDocument)
   @Hidden()
-    content!: Ref<Blob> | null
+    content!: CollaborativeContent | null
 
   @Prop(TypeDocumentState(), documents.string.Status)
     state?: DocumentState

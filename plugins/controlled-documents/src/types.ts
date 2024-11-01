@@ -6,9 +6,9 @@ import { ChatMessage } from '@hcengineering/chunter'
 import { Employee } from '@hcengineering/contact'
 import {
   type AttachedDoc,
-  type Blob,
   type Class,
   type CollectionSize,
+  type CollaborativeContent,
   type Doc,
   type Markup,
   type Ref,
@@ -122,7 +122,7 @@ export interface Document extends Doc<DocumentSpace> {
   author?: Ref<Employee> // Employee who created/released the document
   owner?: Ref<Employee> // Employee responsible for working on the document
   state: DocumentState
-  content: Ref<Blob> | null
+  content: CollaborativeContent | null
   labels?: CollectionSize<TagReference> // A collection of attached tags(labels)
   abstract?: string
   commentSequence: number // Used to enumerate the comments across revisions of the working copy of the document
@@ -138,7 +138,7 @@ export interface Document extends Doc<DocumentSpace> {
  */
 export interface DocumentSnapshot extends AttachedDoc {
   name?: string
-  content: Ref<Blob> | null
+  content: CollaborativeContent | null
   state?: DocumentState
 }
 

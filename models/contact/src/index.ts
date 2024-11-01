@@ -39,6 +39,7 @@ import {
   IndexKind,
   type Blob,
   type Class,
+  type CollaborativeContent,
   type Domain,
   type Ref,
   type Timestamp
@@ -53,7 +54,7 @@ import {
   ReadOnly,
   TypeBlob,
   TypeBoolean,
-  TypeCollaborativeDoc,
+  TypeCollaborativeContent,
   TypeDate,
   TypeRecord,
   TypeRef,
@@ -172,9 +173,9 @@ export class TMember extends TAttachedDoc implements Member {
 @Model(contact.class.Organization, contact.class.Contact)
 @UX(contact.string.Organization, contact.icon.Company, 'ORG', 'name', undefined, contact.string.Organizations)
 export class TOrganization extends TContact implements Organization {
-  @Prop(TypeCollaborativeDoc(), core.string.Description)
+  @Prop(TypeCollaborativeContent(), core.string.Description)
   @Index(IndexKind.FullText)
-    description!: Ref<Blob> | null
+    description!: CollaborativeContent | null
 
   @Prop(Collection(contact.class.Member), contact.string.Members)
     members!: number

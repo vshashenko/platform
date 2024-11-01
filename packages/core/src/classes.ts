@@ -56,6 +56,13 @@ export type Rank = string
 
 /**
  * @public
+ *
+ * Reference to blob containing snapshot of collaborative content.
+ */
+export type CollaborativeContent = Ref<Blob>
+
+/**
+ * @public
  */
 export interface Obj {
   _class: Ref<Class<this>>
@@ -75,7 +82,7 @@ export interface Doc<S extends Space = Space> extends Obj {
 
 export interface Card extends Doc {
   title: string
-  description?: Ref<Blob> | null
+  description?: CollaborativeContent | null
   identifier?: string
   parent?: Ref<Card> | null
 }

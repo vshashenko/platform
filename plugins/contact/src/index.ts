@@ -24,6 +24,7 @@ import {
   Timestamp,
   UXObject,
   type Blob,
+  type CollaborativeContent,
   type Data,
   type WithLookup
 } from '@hcengineering/core'
@@ -136,7 +137,7 @@ export interface Member extends AttachedDoc {
  */
 export interface Organization extends Contact {
   members: number
-  description: Ref<Blob> | null
+  description: CollaborativeContent | null
 }
 
 /**

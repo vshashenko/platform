@@ -35,7 +35,6 @@ export class BlobClient {
       url = url.slice(0, url.length - 1)
     }
 
-    // TODO ???
     this.transactorAPIUrl = url.replaceAll('wss://', 'https://').replace('ws://', 'http://') + '/api/v1/blob'
   }
 

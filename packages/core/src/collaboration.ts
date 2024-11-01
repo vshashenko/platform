@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import type { Blob, Class, Doc, Ref } from './classes'
+import type { Class, CollaborativeContent, Doc, Ref } from './classes'
 
 /** @public */
 export interface CollaborativeDoc {
@@ -40,14 +40,14 @@ export function makeDocCollabId<T extends Doc, U extends keyof T> (
 }
 
 /** @public */
-export function makeCollabYdocId (doc: CollaborativeDoc): Ref<Blob> {
+export function makeCollabYdocId (doc: CollaborativeDoc): CollaborativeContent {
   const { objectId, objectAttr } = doc
-  return `${objectId}%${objectAttr}` as Ref<Blob>
+  return `${objectId}%${objectAttr}` as CollaborativeContent
 }
 
 /** @public */
-export function makeCollabJsonId (doc: CollaborativeDoc): Ref<Blob> {
+export function makeCollabJsonId (doc: CollaborativeDoc): CollaborativeContent {
   const timestamp = Date.now()
   const { objectId, objectAttr } = doc
-  return [objectId, objectAttr, timestamp].join('-') as Ref<Blob>
+  return [objectId, objectAttr, timestamp].join('-') as CollaborativeContent
 }

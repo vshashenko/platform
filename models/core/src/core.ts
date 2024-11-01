@@ -28,6 +28,7 @@ import {
   type Card,
   type Class,
   type ClassifierKind,
+  type CollaborativeContent,
   type Collection,
   type Configuration,
   type ConfigurationElement,
@@ -62,7 +63,7 @@ import {
   Prop,
   ReadOnly,
   TypeBoolean,
-  TypeCollaborativeDoc,
+  TypeCollaborativeContent,
   TypeFileSize,
   TypeIntlString,
   TypeRecord,
@@ -120,8 +121,8 @@ export class TCard extends TDoc implements Card {
   @Prop(TypeString(), core.string.Name)
     title!: string
 
-  @Prop(TypeCollaborativeDoc(), core.string.Description)
-    description!: Ref<Blob> | null
+  @Prop(TypeCollaborativeContent(), core.string.Description)
+    description!: CollaborativeContent | null
 
   @Prop(TypeString(), core.string.Id)
     identifier?: string | undefined
