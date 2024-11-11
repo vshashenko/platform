@@ -140,8 +140,8 @@
     {
       "commandKind": "global",
       "name": "doformat",
-      "summary": "Show a formatting errors if pressent",
-      "description": "use to build all docker containers required for platform",
+      "summary": "Do a format and show errors after it",
+      "description": "Do a format and show errors after it",
       "safeForSimultaneousRushProcesses": true,
       "shellCommand": "rush format && ./common/scripts/format-show.sh"
     },        
