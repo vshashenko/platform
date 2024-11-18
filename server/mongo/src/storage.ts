@@ -61,8 +61,7 @@ import core, {
   type WorkspaceId
 } from '@hcengineering/core'
 import {
-  estimateDocSize,
-  updateHashForDoc,
+  toDocInfo,
   type DbAdapter,
   type DbAdapterHandler,
   type DomainHelperOperations,
@@ -71,7 +70,6 @@ import {
   type TxAdapter
 } from '@hcengineering/server-core'
 import { calculateObjectSize } from 'bson'
-import { createHash } from 'crypto'
 import {
   type AbstractCursor,
   type AnyBulkWriteOperation,
@@ -1060,10 +1058,10 @@ abstract class MongoAdapterBase implements DbAdapter {
         }
         const result: DocInfo[] = []
         if (d != null) {
-          result.push(this.toDocInfo(d, bulkUpdate, recheck))
+          result.push(toDocInfo(d, bulkUpdate, recheck))
         }
         if (iterator.bufferedCount() > 0) {
-          result.push(...iterator.readBufferedDocuments().map((it) => this.toDocInfo(it, bulkUpdate, recheck)))
+          result.push(...iterator.readBufferedDocuments().map((it) => toDocInfo(it, bulkUpdate, recheck)))
         }
         await ctx.with('flush', {}, () => flush())
         return result
@@ -1072,42 +1070,6 @@ abstract class MongoAdapterBase implements DbAdapter {
         await ctx.with('flush', {}, () => flush(true))
         await ctx.with('close', {}, () => iterator.close())
         ctx.end()
-      }
-    }
-  }
-
-  private toDocInfo (d: Doc, bulkUpdate: Map<Ref<Doc>, string>, recheck?: boolean): DocInfo {
-    let digest: string | null = (d as any)['%hash%']
-    if ('%hash%' in d) {
-      delete d['%hash%']
-    }
-    const pos = (digest ?? '').indexOf('|')
-    const oldDigest = digest
-    if (digest == null || digest === '' || recheck === true) {
-      let size = estimateDocSize(d)
-
-      if (this.options?.calculateHash !== undefined) {
-        ;({ digest, size } = this.options.calculateHash(d))
-      } else {
-        const hash = createHash('sha256')
-        updateHashForDoc(hash, d)
-        digest = hash.digest('base64')
-      }
-      const newDigest = `${digest}|${size.toString(16)}`
-
-      if (recheck !== true || oldDigest !== newDigest) {
-        bulkUpdate.set(d._id, `${digest}|${size.toString(16)}`)
-      }
-      return {
-        id: d._id,
-        hash: digest,
-        size
-      }
-    } else {
-      return {
-        id: d._id,
-        hash: digest.slice(0, pos),
-        size: parseInt(digest.slice(pos + 1), 16)
       }
     }
   }

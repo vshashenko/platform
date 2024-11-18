@@ -57,12 +57,10 @@ import {
   type DbAdapter,
   type DbAdapterHandler,
   type DomainHelperOperations,
-  estimateDocSize,
   type ServerFindOptions,
-  type TxAdapter,
-  updateHashForDoc
+  toDocInfo,
+  type TxAdapter
 } from '@hcengineering/server-core'
-import { createHash } from 'crypto'
 import type postgres from 'postgres'
 import { getDocFieldsByDomains, translateDomain } from './schemas'
 import { type ValueType } from './types'
@@ -1098,115 +1096,83 @@ abstract class PostgresAdapterBase implements DbAdapter {
   find (_ctx: MeasureContext, domain: Domain, recheck?: boolean): StorageIterator {
     const ctx = _ctx.newChild('find', { domain })
 
-    const getCursorName = (): string => {
-      return `cursor_${translateDomain(this.workspaceId.name)}_${translateDomain(domain)}_${mode}`
-    }
-
     let initialized: boolean = false
     let client: postgres.ReservedSql
     let mode: 'hashed' | 'non_hashed' = 'hashed'
-    let cursorName = getCursorName()
     const bulkUpdate = new Map<Ref<Doc>, string>()
-
-    const close = async (cursorName: string): Promise<void> => {
-      try {
-        await client.unsafe(`CLOSE ${cursorName}`)
-        await client.unsafe('COMMIT')
-      } catch (err) {
-        ctx.error('Error while closing cursor', { cursorName, err })
-      } finally {
-        client.release()
-      }
-    }
-
-    const init = async (projection: string, query: string): Promise<void> => {
-      cursorName = getCursorName()
-      client = await this.client.reserve()
-      await client.unsafe('BEGIN')
-      await client.unsafe(
-        `DECLARE ${cursorName} CURSOR FOR SELECT ${projection} FROM ${translateDomain(domain)} WHERE "workspaceId" = $1 AND ${query}`,
-        [this.workspaceId.name]
-      )
-    }
-
-    const next = async (limit: number): Promise<Doc[]> => {
-      const result = await client.unsafe(`FETCH ${limit} FROM ${cursorName}`)
-      if (result.length === 0) {
-        return []
-      }
-      return result.filter((it) => it != null).map((it) => parseDoc(it as any, domain))
-    }
 
     const flush = async (flush = false): Promise<void> => {
       if (bulkUpdate.size > 1000 || flush) {
         if (bulkUpdate.size > 0) {
+          const entries = Array.from(bulkUpdate.entries())
+          const data: string[] = entries.flat()
+          bulkUpdate.clear()
+          const indexes = entries.map((val, idx) => `($${2 * idx + 1}::text, $${2 * idx + 2}::text)`).join(', ')
           await ctx.with('bulk-write-find', {}, () => {
-            const updates = new Map(Array.from(bulkUpdate.entries()).map((it) => [it[0], { '%hash%': it[1] }]))
-            return this.update(ctx, domain, updates)
+            return this.retryTxn(client, async (client) => {
+              await client.unsafe(
+                `
+                UPDATE ${translateDomain(domain)} SET "%hash%" = update_data.hash
+                FROM (values ${indexes}) AS update_data(_id, hash)
+                WHERE ${translateDomain(domain)}."workspaceId" = '${this.workspaceId.name}' AND ${translateDomain(domain)}."_id" = update_data._id
+              `,
+                data
+              )
+            })
           })
         }
-        bulkUpdate.clear()
       }
     }
+
+    const workspaceId = this.workspaceId
+
+    async function * createBulk (projection: string, query: string, limit = 50): AsyncGenerator<Doc[]> {
+      const cursor =
+        client`SELECT ${projection} FROM ${client(translateDomain(domain))} WHERE "workspaceId" = ${workspaceId.name} AND ${query}`.cursor(
+          limit
+        )
+      for await (const part of cursor) {
+        yield part.filter((it) => it != null).map((it) => parseDoc(it as any, domain))
+      }
+    }
+    let bulk: AsyncGenerator<Doc[]>
 
     return {
       next: async () => {
         if (!initialized) {
+          if (client === undefined) {
+            client = await this.client.reserve()
+          }
+
           if (recheck === true) {
             await this.retryTxn(client, async (client) => {
-              await client`UPDATE ${client(translateDomain(domain))} SET '%hash%' = NULL WHERE "workspaceId" = ${this.workspaceId.name} AND '%hash%' IS NOT NULL`
+              await client`UPDATE ${client(translateDomain(domain))} SET "%hash%" = NULL WHERE "workspaceId" = ${this.workspaceId.name} AND "%hash%" IS NOT NULL`
             })
           }
-          await init('_id, data', "'%hash%' IS NOT NULL AND '%hash%' <> ''")
+
           initialized = true
+          bulk = createBulk('_id, data', '"%hash%" IS NOT NULL AND "%hash%" <> \'\'')
         }
-        let docs = await ctx.with('next', { mode }, () => next(50))
-        if (docs.length === 0 && mode === 'hashed') {
-          await close(cursorName)
+
+        let docs = await ctx.with('next', { mode }, () => bulk.next())
+        if (docs.done === true && mode === 'hashed') {
           mode = 'non_hashed'
-          await init('*', "'%hash%' IS NULL OR '%hash%' = ''")
-          docs = await ctx.with('next', { mode }, () => next(50))
+          bulk = createBulk('*', '"%hash%" IS NULL OR "%hash%" = \'\'')
+          docs = await ctx.with('next', { mode }, () => bulk.next())
         }
-        if (docs.length === 0) {
+        if (docs.done === true) {
           return []
         }
         const result: DocInfo[] = []
-        for (const d of docs) {
-          let digest: string | null = (d as any)['%hash%']
-          if ('%hash%' in d) {
-            delete d['%hash%']
-          }
-          const pos = (digest ?? '').indexOf('|')
-          if (digest == null || digest === '') {
-            const cs = ctx.newChild('calc-size', {})
-            const size = estimateDocSize(d)
-            cs.end()
-
-            const hash = createHash('sha256')
-            updateHashForDoc(hash, d)
-            digest = hash.digest('base64')
-
-            bulkUpdate.set(d._id, `${digest}|${size.toString(16)}`)
-
-            await ctx.with('flush', {}, () => flush())
-            result.push({
-              id: d._id,
-              hash: digest,
-              size
-            })
-          } else {
-            result.push({
-              id: d._id,
-              hash: digest.slice(0, pos),
-              size: parseInt(digest.slice(pos + 1), 16)
-            })
-          }
+        for (const d of docs.value) {
+          result.push(toDocInfo(d, bulkUpdate))
         }
+        await ctx.with('flush', {}, () => flush())
         return result
       },
       close: async () => {
         await ctx.with('flush', {}, () => flush(true))
-        await close(cursorName)
+        client?.release()
         ctx.end()
       }
     }
